@@ -228,6 +228,7 @@ const ProfileUpdate = () => {
       setLoading(true);
       const data = await getGender();
       setGenders(data || []);
+      console.log("getGender: ", data);
     } catch (error) {
       console.error("Error cargando géneros:", error);
     } finally {

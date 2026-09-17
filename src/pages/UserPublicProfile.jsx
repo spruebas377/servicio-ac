@@ -485,7 +485,9 @@ export default function UserPublicProfile() {
                     />
                     <Typography variant="body2" color="text.secondary">
                       Altura:{" "}
-                      {userData.height ? userData.height : "No especificado"}
+                      {userData.height
+                        ? `${userData.height} m`
+                        : "No especificado"}
                     </Typography>
                   </Stack>
                   {/* Age */}
