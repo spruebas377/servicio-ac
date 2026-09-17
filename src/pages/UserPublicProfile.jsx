@@ -24,10 +24,8 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import GenderHelper from "../components/GenderHelper";
+import GenderHelper from "../helpers/GenderHelper";
 import { styled, alpha, useTheme } from "@mui/material/styles";
-import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import PhotoLibraryOutlinedIcon from "@mui/icons-material/PhotoLibraryOutlined";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
@@ -45,6 +43,7 @@ import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import Face4Icon from "@mui/icons-material/Face4";
 import HeightOutlinedIcon from "@mui/icons-material/HeightOutlined";
 import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
+import PaymentIcon from "@mui/icons-material/Payment";
 import { QuestionAnswerOutlined } from "@mui/icons-material";
 import { supabase } from "../supabase/client";
 
@@ -158,17 +157,16 @@ export default function UserPublicProfile() {
     const fetchPaymentMethods = async () => {
       if (!userData) return;
       try {
-        /* select nombre from payment_method inner join user_payment on payment_method.id = user_payment.id_payment_method where user_payment.id_user = userData.id */
         const { data, error } = await supabase
           .from("user_payment")
-          .select("payment_method(name)")
+          .select("payment_methods(name)")
           .eq("id_user", userData.id);
 
         if (error) {
           console.error("Error al obtener métodos de pago:", error);
           setPaymentMethods([]);
         } else {
-          setPaymentMethods(data.map((item) => item.payment_method.name));
+          setPaymentMethods(data.map((item) => item.payment_methods.name));
         }
       } catch (err) {
         console.error("Excepción cargando métodos de pago:", err);
@@ -497,6 +495,18 @@ export default function UserPublicProfile() {
                     />
                     <Typography variant="body2" color="text.secondary">
                       Edad: {userData.age ? userData.age : "No especificado"}
+                    </Typography>
+                  </Stack>
+                  {/* Métodos de pago */}
+                  <Stack direction="row" spacing={0.5} alignItems="flex-start">
+                    <PaymentIcon
+                      sx={{ fontSize: 16, color: "text.secondary" }}
+                    />
+                    <Typography variant="body2" color="text.secondary">
+                      Métodos de pago disponibles:{<br />}
+                      {paymentMethods
+                        ?.map((paymentMethod) => paymentMethod)
+                        .join(", ")}
                     </Typography>
                   </Stack>
                 </Box>

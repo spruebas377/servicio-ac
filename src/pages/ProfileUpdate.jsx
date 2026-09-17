@@ -1,5 +1,5 @@
 // src/pages/ProfileUpdate.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import AvatarUploader from "../components/AvatarUploader";
 import {
   Button,
@@ -11,12 +11,14 @@ import {
   InputLabel,
   Paper,
   Typography,
-  Avatar,
   Divider,
   Stack,
   InputAdornment,
   CircularProgress,
   Container,
+  FormGroup,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import { styled, alpha, useTheme } from "@mui/material/styles";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
@@ -30,12 +32,13 @@ import Face6OutlinedIcon from "@mui/icons-material/Face6Outlined";
 import HeightOutlinedIcon from "@mui/icons-material/HeightOutlined";
 import BrushOutlinedIcon from "@mui/icons-material/BrushOutlined";
 import PersonIcon from "@mui/icons-material/Person";
+import PaymentIcon from "@mui/icons-material/Payment";
+import QuestionAnswerOutlined from "@mui/icons-material/QuestionAnswerOutlined";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router";
 import { supabase } from "../supabase/client";
-import { QuestionAnswerOutlined } from "@mui/icons-material";
 
-/* ---------- Paper premium (mismo lenguaje que la card de perfil) ---------- */
+/* ---------- Paper premium ---------- */
 const PremiumPaper = styled(Paper)(({ theme }) => ({
   width: "100%",
   maxWidth: 560,
@@ -69,9 +72,7 @@ const fieldSx = (theme) => ({
         ? alpha("#000", 0.015)
         : alpha("#fff", 0.03),
     transition: "all 0.2s ease",
-    "& fieldset": {
-      borderColor: theme.palette.divider,
-    },
+    "& fieldset": { borderColor: theme.palette.divider },
     "&:hover fieldset": {
       borderColor: alpha(theme.palette.text.primary, 0.2),
     },
@@ -86,15 +87,13 @@ const fieldSx = (theme) => ({
   },
   "& .MuiInputLabel-root": {
     fontSize: "0.9rem",
-    "&.Mui-focused": {
-      color: theme.palette.text.primary,
-    },
+    "&.Mui-focused": { color: theme.palette.text.primary },
   },
 });
 
-/* ---------- Encabezado de sección reutilizable ---------- */
+/* ---------- Encabezado de sección ---------- */
 const SectionLabel = ({ icon, children }) => (
-  <Stack direction="row" spacing={1} alignitems="center" sx={{ mb: 1.5 }}>
+  <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
     <Box
       sx={{
         display: "flex",
@@ -119,10 +118,27 @@ const SectionLabel = ({ icon, children }) => (
   </Stack>
 );
 
+/* ---------- Select menu props (DRY) ---------- */
+const selectMenuProps = (theme) => ({
+  PaperProps: {
+    sx: {
+      borderRadius: 3,
+      mt: 0.5,
+      border: `1px solid ${theme.palette.divider}`,
+      boxShadow:
+        theme.palette.mode === "light"
+          ? "0 20px 35px -8px rgba(0,0,0,0.08)"
+          : "0 20px 35px -8px rgba(0,0,0,0.5)",
+    },
+  },
+});
+
 /* ---------- Componente principal ---------- */
 const ProfileUpdate = () => {
   const theme = useTheme();
   const { user, setUser, updateUserData } = useAuth();
+  const navigate = useNavigate();
+
   const [phone, setPhone] = useState(user?.phone || "");
   const [name, setName] = useState(user?.name || "");
   const [description, setDescription] = useState(user?.description || "");
@@ -131,35 +147,79 @@ const ProfileUpdate = () => {
   const [hairColor, setHairColor] = useState(user?.hair || "");
   const [eyeColor, setEyeColor] = useState(user?.eyes || "");
   const [age, setAge] = useState(user?.age || "");
-  const [genders, setGenders] = useState([]);
   const [selectedGender, setSelectedGender] = useState(user?.gender || "");
   const [aboutMe, setAboutMe] = useState(user?.about_me || "");
+
+  const [genders, setGenders] = useState([]);
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [selectedPaymentMethods, setSelectedPaymentMethods] = useState([]);
   const [provinces, setProvinces] = useState([]);
   const [locations, setLocations] = useState([]);
   const [selectedProvince, setSelectedProvince] = useState(
     user?.province || "",
   );
   const [selectedLocation, setSelectedLocation] = useState(user?.city || "");
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const navigate = useNavigate();
 
+  const [loadingLocations, setLoadingLocations] = useState(false);
+  const [loadingInitial, setLoadingInitial] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  /* ---------- Carga inicial (catálogos + datos del usuario + pagos) ---------- */
   useEffect(() => {
-    loadGenders();
-    loadProvinces();
+    let cancelled = false;
+
+    const loadAll = async () => {
+      setLoadingInitial(true);
+      try {
+        const [gendersRes, paymentsRes, provincesRes] = await Promise.all([
+          supabase.from("gender").select("*").order("id", { ascending: true }),
+          supabase
+            .from("payment_methods")
+            .select("*")
+            .order("name", { ascending: true }),
+          supabase
+            .from("provincias")
+            .select("*")
+            .order("nombre", { ascending: true }),
+        ]);
+
+        if (cancelled) return;
+
+        setGenders(gendersRes.data || []);
+        setPaymentMethods(paymentsRes.data || []);
+        setProvinces(provincesRes.data || []);
+      } catch (error) {
+        console.error("Error cargando catálogos:", error);
+      } finally {
+        if (!cancelled) setLoadingInitial(false);
+      }
+    };
+
+    loadAll();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
+  /* ---------- Datos del usuario + métodos de pago ya guardados ---------- */
   useEffect(() => {
-    const fetchUserData = async () => {
-      if (!user?.id) return;
-      try {
-        const { data, error } = await supabase
-          .from("user_data")
-          .select("*")
-          .eq("id", user.id)
-          .single();
+    if (!user?.id) return;
+    let cancelled = false;
 
-        if (data && !error) {
+    const fetchUserData = async () => {
+      try {
+        const [userRes, paymentsRes] = await Promise.all([
+          supabase.from("user_data").select("*").eq("id", user.id).single(),
+          supabase
+            .from("user_payment")
+            .select("id_payment_methods")
+            .eq("id_user", user.id),
+        ]);
+
+        if (cancelled) return;
+
+        const data = userRes.data;
+        if (data && !userRes.error) {
           if (data.name) setName(data.name);
           if (data.phone) setPhone(data.phone);
           if (data.description) setDescription(data.description);
@@ -173,9 +233,15 @@ const ProfileUpdate = () => {
           if (data.province) {
             setSelectedProvince(data.province);
             const locData = await getLocations(data.province);
-            setLocations(locData || []);
+            if (!cancelled) setLocations(locData || []);
           }
           if (data.city) setSelectedLocation(data.city);
+        }
+
+        if (!paymentsRes.error && paymentsRes.data) {
+          setSelectedPaymentMethods(
+            paymentsRes.data.map((r) => r.id_payment_methods),
+          );
         }
       } catch (error) {
         console.error("Error cargando datos del usuario:", error);
@@ -183,17 +249,20 @@ const ProfileUpdate = () => {
     };
 
     fetchUserData();
+    return () => {
+      cancelled = true;
+    };
   }, [user?.id]);
 
-  /* Callback cuando cambia el avatar */
+  /* ---------- Avatar ---------- */
   const handleAvatarUploaded = (url) => {
     setUser((prev) => ({ ...prev, avatar_url: url }));
   };
 
+  /* ---------- Guardar cambios ---------- */
   const handleUpdateProfile = async () => {
     const userData = {
       id: user.id,
-      auth_id: user.id,
       ...(name && name !== user.name && { name }),
       ...(description && description !== user.description && { description }),
       ...(phone && phone !== user.phone && { phone }),
@@ -211,106 +280,110 @@ const ProfileUpdate = () => {
         selectedProvince !== user.province && { province: selectedProvince }),
     };
 
-    if (Object.keys(userData).length > 1) {
-      setSaving(true);
-      try {
-        const updatedUserData = await updateUserData(userData);
-        setUser((prevUser) => ({ ...prevUser, ...updatedUserData }));
-      } finally {
-        setSaving(false);
-      }
-    }
-    navigate("/");
-  };
+    const hasChanges = Object.keys(userData).length > 1;
+    const hasPayments = selectedPaymentMethods.length > 0;
 
-  const loadGenders = async () => {
-    try {
-      setLoading(true);
-      const data = await getGender();
-      setGenders(data || []);
-      console.log("getGender: ", data);
-    } catch (error) {
-      console.error("Error cargando géneros:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadProvinces = async () => {
-    try {
-      setLoading(true);
-      const data = await getProvinces();
-      setProvinces(data || []);
-    } catch (error) {
-      console.error("Error cargando provincias:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadLocations = async (provinceId) => {
-    if (!provinceId) {
-      setLocations([]);
+    if (!hasChanges && !hasPayments) {
+      navigate("/");
       return;
     }
+
+    setSaving(true);
     try {
-      setLoading(true);
-      const data = await getLocations(provinceId);
-      setLocations(data || []);
+      if (hasChanges) {
+        const updatedUserData = await updateUserData(userData);
+        setUser((prevUser) => ({ ...prevUser, ...updatedUserData }));
+      }
+      if (hasPayments) {
+        await saveSelectedPaymentMethods();
+      }
+      navigate("/");
     } catch (error) {
-      console.error("Error cargando localidades:", error);
+      console.error("Error guardando perfil:", error);
+      // Podés mostrar un snackbar/toast acá
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
-  const handleProvinceChange = (e) => {
-    const provinceId = e.target.value;
-    setSelectedProvince(provinceId);
-    setSelectedLocation("");
-    loadLocations(provinceId);
-  };
-
-  const handleLocationChange = (e) => {
-    setSelectedLocation(e.target.value);
-  };
-
-  const getProvinces = async () => {
-    const { data } = await supabase
-      .from("provincias")
-      .select("*")
-      .order("nombre", { ascending: true });
-    return data;
-  };
-
+  /* ---------- Helpers de datos ---------- */
   const getLocations = async (province_id) => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("localidades")
       .select("*")
       .eq("provincia_id", province_id)
       .order("nombre", { ascending: true });
+    if (error) {
+      console.error("Error cargando localidades:", error);
+      return [];
+    }
     return data;
   };
 
-  const getGender = async () => {
-    const { data } = await supabase
-      .from("gender")
-      .select("*")
-      .order("id", { ascending: true });
-    return data;
+  /* ---------- Handlers ---------- */
+  const handleProvinceChange = async (e) => {
+    const provinceId = e.target.value;
+    setSelectedProvince(provinceId);
+    setSelectedLocation("");
+
+    if (!provinceId) {
+      setLocations([]);
+      return;
+    }
+    setLoadingLocations(true);
+    try {
+      const data = await getLocations(provinceId);
+      setLocations(data || []);
+    } finally {
+      setLoadingLocations(false);
+    }
   };
 
-  const handleGenderChange = (e) => {
-    setSelectedGender(e.target.value);
+  const handleLocationChange = (e) => setSelectedLocation(e.target.value);
+  const handleGenderChange = (e) => setSelectedGender(e.target.value);
+
+  const handlePaymentMethodToggle = (id, isChecked) => {
+    setSelectedPaymentMethods((prev) =>
+      isChecked ? [...prev, id] : prev.filter((x) => x !== id),
+    );
   };
 
-  const initials =
-    (name || user?.name || "?")
-      .split(" ")
-      .map((w) => w[0])
-      .slice(0, 2)
-      .join("")
-      .toUpperCase() || "?";
+  /* ---------- Guardar métodos de pago (insert bulk, sin duplicados) ---------- */
+  const saveSelectedPaymentMethods = async () => {
+    const { data: existing, error: fetchError } = await supabase
+      .from("user_payment")
+      .select("id_payment_methods")
+      .eq("id_user", user.id);
+
+    if (fetchError) throw fetchError;
+
+    const existingIds = existing.map((r) => r.id_payment_methods);
+    const toAdd = selectedPaymentMethods.filter(
+      (id) => !existingIds.includes(id),
+    );
+    const toRemove = existingIds.filter(
+      (id) => !selectedPaymentMethods.includes(id),
+    );
+
+    if (toAdd.length) {
+      const { error } = await supabase.from("user_payment").insert(
+        toAdd.map((id_payment_methods) => ({
+          id_user: user.id,
+          id_payment_methods,
+        })),
+      );
+      if (error) throw error;
+    }
+
+    if (toRemove.length) {
+      const { error } = await supabase
+        .from("user_payment")
+        .delete()
+        .eq("id_user", user.id)
+        .in("id_payment_methods", toRemove);
+      if (error) throw error;
+    }
+  };
 
   return (
     <Container
@@ -318,7 +391,7 @@ const ProfileUpdate = () => {
       sx={{
         minHeight: "calc(100vh - 72px)",
         display: "flex",
-        alignitems: "center",
+        alignItems: "center",
         justifyContent: "center",
         py: { xs: 4, md: 6 },
       }}
@@ -347,11 +420,11 @@ const ProfileUpdate = () => {
           Volver
         </Button>
 
-        {/* Header con avatar + título */}
+        {/* Header */}
         <Box
           sx={{
             display: "flex",
-            alignitems: "center",
+            alignItems: "center",
             gap: 3,
             mb: 3,
             flexDirection: { xs: "column", sm: "row" },
@@ -378,7 +451,7 @@ const ProfileUpdate = () => {
 
         <Divider sx={{ my: 3 }} />
 
-        {/* Sección: Información personal */}
+        {/* Información personal */}
         <SectionLabel icon={<AccountCircleIcon />}>
           Información personal
         </SectionLabel>
@@ -443,7 +516,7 @@ const ProfileUpdate = () => {
           />
         </Stack>
 
-        {/* Sección: Ubicación */}
+        {/* Ubicación */}
         <SectionLabel icon={<LocationOnOutlinedIcon />}>Ubicación</SectionLabel>
         <Box
           sx={{
@@ -460,19 +533,7 @@ const ProfileUpdate = () => {
               onChange={handleProvinceChange}
               labelId="province-label"
               label="Provincia"
-              MenuProps={{
-                PaperProps: {
-                  sx: {
-                    borderRadius: 3,
-                    mt: 0.5,
-                    border: `1px solid ${theme.palette.divider}`,
-                    boxShadow:
-                      theme.palette.mode === "light"
-                        ? "0 20px 35px -8px rgba(0,0,0,0.08)"
-                        : "0 20px 35px -8px rgba(0,0,0,0.5)",
-                  },
-                },
-              }}
+              MenuProps={selectMenuProps(theme)}
             >
               <MenuItem value="">
                 <em>Seleccione una provincia</em>
@@ -488,7 +549,7 @@ const ProfileUpdate = () => {
           <FormControl
             fullWidth
             sx={fieldSx(theme)}
-            disabled={!selectedProvince || loading}
+            disabled={!selectedProvince || loadingLocations}
           >
             <InputLabel id="location-label">Localidad</InputLabel>
             <Select
@@ -496,19 +557,7 @@ const ProfileUpdate = () => {
               onChange={handleLocationChange}
               labelId="location-label"
               label="Localidad"
-              MenuProps={{
-                PaperProps: {
-                  sx: {
-                    borderRadius: 3,
-                    mt: 0.5,
-                    border: `1px solid ${theme.palette.divider}`,
-                    boxShadow:
-                      theme.palette.mode === "light"
-                        ? "0 20px 35px -8px rgba(0,0,0,0.08)"
-                        : "0 20px 35px -8px rgba(0,0,0,0.5)",
-                  },
-                },
-              }}
+              MenuProps={selectMenuProps(theme)}
             >
               <MenuItem value="">
                 <em>Seleccione una localidad</em>
@@ -524,18 +573,11 @@ const ProfileUpdate = () => {
 
         <Divider sx={{ my: 3 }} />
 
-        {/* Sección: Cómo te definís */}
+        {/* Cómo te definís */}
         <SectionLabel icon={<Face6OutlinedIcon />}>
           Cómo te definís
         </SectionLabel>
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", sm: "1fr" },
-            gap: 2.5,
-            mb: 3.5,
-          }}
-        >
+        <Box sx={{ mb: 3.5 }}>
           <FormControl fullWidth sx={fieldSx(theme)}>
             <InputLabel id="gender-label">Género</InputLabel>
             <Select
@@ -543,19 +585,7 @@ const ProfileUpdate = () => {
               onChange={handleGenderChange}
               labelId="gender-label"
               label="Género"
-              MenuProps={{
-                PaperProps: {
-                  sx: {
-                    borderRadius: 3,
-                    mt: 0.5,
-                    border: `1px solid ${theme.palette.divider}`,
-                    boxShadow:
-                      theme.palette.mode === "light"
-                        ? "0 20px 35px -8px rgba(0,0,0,0.08)"
-                        : "0 20px 35px -8px rgba(0,0,0,0.5)",
-                  },
-                },
-              }}
+              MenuProps={selectMenuProps(theme)}
             >
               <MenuItem value="">
                 <em>Seleccione un género</em>
@@ -568,8 +598,10 @@ const ProfileUpdate = () => {
             </Select>
           </FormControl>
         </Box>
+
         <Divider sx={{ my: 3 }} />
-        {/* Sección: Características físicas */}
+
+        {/* Cómo sos */}
         <SectionLabel icon={<Face6OutlinedIcon />}>Cómo sos</SectionLabel>
         <Box
           sx={{
@@ -579,109 +611,127 @@ const ProfileUpdate = () => {
             mb: 3.5,
           }}
         >
-          <FormControl fullWidth sx={fieldSx(theme)}>
-            <TextField
-              fullWidth
-              label="Altura"
-              value={height}
-              onChange={(e) => setHeight(e.target.value)}
-              sx={fieldSx(theme)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <HeightOutlinedIcon
-                      sx={{ color: "text.disabled", fontSize: 20 }}
-                    />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </FormControl>
-          <FormControl fullWidth sx={fieldSx(theme)}>
-            <TextField
-              fullWidth
-              label="Color de cabello"
-              value={hairColor}
-              onChange={(e) => setHairColor(e.target.value)}
-              sx={fieldSx(theme)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <BrushOutlinedIcon
-                      sx={{ color: "text.disabled", fontSize: 20 }}
-                    />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </FormControl>
-          <FormControl fullWidth sx={fieldSx(theme)}>
-            <TextField
-              fullWidth
-              label="Color de ojos"
-              value={eyeColor}
-              onChange={(e) => setEyeColor(e.target.value)}
-              sx={fieldSx(theme)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <BrushOutlinedIcon
-                      sx={{ color: "text.disabled", fontSize: 20 }}
-                    />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </FormControl>
-          <FormControl fullWidth sx={fieldSx(theme)}>
-            <TextField
-              fullWidth
-              label="Edad"
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
-              sx={fieldSx(theme)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <PersonIcon sx={{ color: "text.disabled", fontSize: 20 }} />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </FormControl>
+          <TextField
+            fullWidth
+            label="Altura"
+            value={height}
+            onChange={(e) => setHeight(e.target.value)}
+            sx={fieldSx(theme)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <HeightOutlinedIcon
+                    sx={{ color: "text.disabled", fontSize: 20 }}
+                  />
+                </InputAdornment>
+              ),
+            }}
+          />
+          <TextField
+            fullWidth
+            label="Color de cabello"
+            value={hairColor}
+            onChange={(e) => setHairColor(e.target.value)}
+            sx={fieldSx(theme)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <BrushOutlinedIcon
+                    sx={{ color: "text.disabled", fontSize: 20 }}
+                  />
+                </InputAdornment>
+              ),
+            }}
+          />
+          <TextField
+            fullWidth
+            label="Color de ojos"
+            value={eyeColor}
+            onChange={(e) => setEyeColor(e.target.value)}
+            sx={fieldSx(theme)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <BrushOutlinedIcon
+                    sx={{ color: "text.disabled", fontSize: 20 }}
+                  />
+                </InputAdornment>
+              ),
+            }}
+          />
+          <TextField
+            fullWidth
+            label="Edad"
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
+            sx={fieldSx(theme)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <PersonIcon sx={{ color: "text.disabled", fontSize: 20 }} />
+                </InputAdornment>
+              ),
+            }}
+          />
         </Box>
 
         <Divider sx={{ my: 3 }} />
 
-        {/* Sección: About me */}
+        {/* About me */}
         <SectionLabel icon={<QuestionAnswerOutlined />}>
           Contanos qué servicios ofrecés, y qué buscás
         </SectionLabel>
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", sm: "1fr" },
-            gap: 2.5,
-            mb: 3.5,
-          }}
-        >
-          <FormControl fullWidth sx={fieldSx(theme)}>
-            <TextField
-              fullWidth
-              label="¿Qué servicios ofrecés?"
-              value={aboutMe}
-              onChange={(e) => setAboutMe(e.target.value)}
-              sx={fieldSx(theme)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <QuestionAnswerOutlined
-                      sx={{ color: "text.disabled", fontSize: 20 }}
-                    />
-                  </InputAdornment>
-                ),
-              }}
-            />
+        <Box sx={{ mb: 3.5 }}>
+          <TextField
+            fullWidth
+            multiline
+            minRows={3}
+            label="¿Cómo sos y qué servicios ofrecés?"
+            value={aboutMe}
+            onChange={(e) => setAboutMe(e.target.value)}
+            sx={fieldSx(theme)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment
+                  position="start"
+                  sx={{ alignSelf: "flex-start", mt: 1.5 }}
+                >
+                  <QuestionAnswerOutlined
+                    sx={{ color: "text.disabled", fontSize: 20 }}
+                  />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Box>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* Métodos de pago */}
+        <SectionLabel icon={<PaymentIcon />}>
+          Seleccioná los métodos de pago que aceptás
+        </SectionLabel>
+        <Box sx={{ mb: 3.5 }}>
+          <FormControl component="fieldset" fullWidth>
+            <FormGroup row>
+              {paymentMethods.map((pm) => {
+                const checked = selectedPaymentMethods.includes(pm.id);
+                return (
+                  <FormControlLabel
+                    key={pm.id}
+                    control={
+                      <Checkbox
+                        checked={checked}
+                        onChange={(e) =>
+                          handlePaymentMethodToggle(pm.id, e.target.checked)
+                        }
+                      />
+                    }
+                    label={pm.name || pm.nombre}
+                  />
+                );
+              })}
+            </FormGroup>
           </FormControl>
         </Box>
 
@@ -713,7 +763,7 @@ const ProfileUpdate = () => {
           <Button
             variant="contained"
             onClick={handleUpdateProfile}
-            disabled={saving}
+            disabled={saving || loadingInitial}
             startIcon={
               saving ? (
                 <CircularProgress size={16} color="inherit" />

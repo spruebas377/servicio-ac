@@ -267,7 +267,7 @@ export default function UserProfileCard() {
   const getPaymentMethods = async (user) => {
     const { data, error } = await supabase
       .from("user_payment")
-      .select(`payment_method ( id, name )`)
+      .select(`payment_methods ( id, name )`)
       .eq("id_user", user);
 
     if (error) {
@@ -275,7 +275,7 @@ export default function UserProfileCard() {
       return;
     }
 
-    const methods = data.map((item) => item.payment_method);
+    const methods = data.map((item) => item.payment_methods);
     setPaymentMethods(methods);
   };
 
