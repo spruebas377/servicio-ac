@@ -218,14 +218,14 @@ export default function UserProfileCard() {
 
   const getGenderName = async (id) => {
     const { data } = await supabase
-      .from("user_data")
-      .select(`gender ( name )`)
-      .eq("gender", id)
+      .from("gender")
+      .select("name")
+      .eq("id", id)
       .single();
     if (!data) {
       return "Indistinto";
     }
-    return data.gender.name;
+    return data.name;
   };
 
   const getCityName = async (cityId) => {
