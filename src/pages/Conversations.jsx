@@ -79,7 +79,7 @@ export default function Conversations() {
       let profiles = [];
       if (otherIds.length) {
         const { data, error: profilesError } = await supabase
-          .from("user-data")
+          .from("user_data")
           .select("auth_id, name, email, avatar_url")
           .in("auth_id", otherIds);
 

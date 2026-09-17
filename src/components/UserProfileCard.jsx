@@ -200,7 +200,7 @@ export default function UserProfileCard() {
       const { user } = data;
       setUser(user);
       let { data: userData } = await supabase
-        .from("user-data")
+        .from("user_data")
         .select("*")
         .eq("id", user.id)
         .single();
@@ -218,7 +218,7 @@ export default function UserProfileCard() {
 
   const getGenderName = async (id) => {
     const { data } = await supabase
-      .from("user-data")
+      .from("user_data")
       .select(`gender ( name )`)
       .eq("gender", id)
       .single();

@@ -122,7 +122,7 @@ export default function UserPublicProfile() {
       setLoadingUser(true);
       try {
         const { data, error } = await supabase
-          .from("user-data")
+          .from("user_data")
           .select("*")
           .eq("id", userId)
           .single();

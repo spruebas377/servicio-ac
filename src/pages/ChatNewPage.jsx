@@ -22,7 +22,7 @@ export default function ChatNewPage() {
       }
 
       const { data: targetProfile, error: profileError } = await supabase
-        .from("user-data")
+        .from("user_data")
         .select("auth_id")
         .eq("id", userId)
         .single();
@@ -49,7 +49,9 @@ export default function ChatNewPage() {
         return;
       }
 
-      const myConversationIds = (myRows || []).map((row) => row.conversation_id);
+      const myConversationIds = (myRows || []).map(
+        (row) => row.conversation_id,
+      );
 
       if (myConversationIds.length) {
         const { data: targetRows } = await supabase

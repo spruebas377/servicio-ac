@@ -154,7 +154,7 @@ const ProfileUpdate = () => {
       if (!user?.id) return;
       try {
         const { data, error } = await supabase
-          .from("user-data")
+          .from("user_data")
           .select("*")
           .eq("id", user.id)
           .single();

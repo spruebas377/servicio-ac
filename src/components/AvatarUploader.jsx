@@ -185,7 +185,7 @@ const AvatarUploader = ({ user, onUploaded }) => {
 
         /* --- 4. Actualizar perfil en BD --- */
         const { error: updateError } = await supabase
-          .from("user-data") // ← ajusta al nombre de tu tabla
+          .from("user_data") // ← ajusta al nombre de tu tabla
           .update({ avatar_url: publicUrl })
           .eq("id", user.id);
 
@@ -215,7 +215,7 @@ const AvatarUploader = ({ user, onUploaded }) => {
       setPreview("");
 
       const { error: updateError } = await supabase
-        .from("user-data")
+        .from("user_data")
         .update({ avatar_url: null })
         .eq("id", user.id);
 

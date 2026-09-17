@@ -186,7 +186,7 @@ export default function NavBar() {
       }
       try {
         const { data: user_data, error } = await supabase
-          .from("user-data")
+          .from("user_data")
           .select("avatar_url")
           .eq("id", user.id)
           .maybeSingle();

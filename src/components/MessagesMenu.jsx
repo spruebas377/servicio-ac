@@ -70,7 +70,7 @@ export default function MessagesMenu() {
 
     const { data: profiles, error: profilesError } = otherIds.length
       ? await supabase
-          .from("user-data")
+          .from("user_data")
           .select("auth_id, name, avatar_url")
           .in("auth_id", otherIds)
       : { data: [], error: null };

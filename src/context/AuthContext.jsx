@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }) => {
     if (!userId) return null;
     try {
       const { data, error } = await supabase
-        .from("user-data")
+        .from("user_data")
         .select("*")
         .eq("id", userId)
         .maybeSingle();
@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }) => {
         const userDataVerified = await verifyUserData(userDataParam.id);
         if (!userDataVerified) {
           const { data, error } = await supabase
-            .from("user-data")
+            .from("user_data")
             .insert({
               id: userDataParam.id,
               email: userDataParam.email,
@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }) => {
             .select("*")
             .single();
           if (error) {
-            console.warn("Error insertando user-data inicial:", error);
+            console.warn("Error insertando user_data inicial:", error);
             return null;
           }
           return data;
@@ -78,7 +78,7 @@ export const AuthProvider = ({ children }) => {
   const getPublicUsersIdsList = useCallback(async () => {
     try {
       const { data, error } = await supabase
-        .from("user-data")
+        .from("user_data")
         .select("*")
         .eq("is_public", true)
         .order("featured", { ascending: false })
@@ -157,7 +157,7 @@ export const AuthProvider = ({ children }) => {
   const updateUserData = async (userData) => {
     if (!userData || !userData.id) return null;
     const { data, error } = await supabase
-      .from("user-data")
+      .from("user_data")
       .update(userData)
       .eq("id", userData.id)
       .select("*");
@@ -203,7 +203,7 @@ export const AuthProvider = ({ children }) => {
   const updatePublicUserStatus = async (userId, isPublic) => {
     if (!userId) return null;
     const { data, error } = await supabase
-      .from("user-data")
+      .from("user_data")
       .update({ is_public: isPublic })
       .eq("id", userId)
       .select("*");
