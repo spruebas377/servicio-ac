@@ -1,0 +1,18 @@
+create table public.localidades (
+  categoria text null,
+  centroide_lat double precision null,
+  centroide_lon double precision null,
+  departamento_id bigint null,
+  departamento_nombre text null,
+  fuente text null,
+  gobierno_local_id bigint null,
+  gobierno_local_nombre text null,
+  id bigint not null,
+  localidad_censal_id bigint null,
+  localidad_censal_nombre text null,
+  nombre text null,
+  provincia_id bigint null,
+  provincia_nombre text null,
+  constraint localidades_pkey primary key (id),
+  constraint localidades_provincia_id_fkey foreign KEY (provincia_id) references provincias (id) on update CASCADE on delete CASCADE
+) TABLESPACE pg_default;
