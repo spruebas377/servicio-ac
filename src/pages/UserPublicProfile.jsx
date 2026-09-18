@@ -39,11 +39,11 @@ import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupported
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
-import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import Face4Icon from "@mui/icons-material/Face4";
 import HeightOutlinedIcon from "@mui/icons-material/HeightOutlined";
 import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
 import PaymentIcon from "@mui/icons-material/Payment";
+import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import { QuestionAnswerOutlined } from "@mui/icons-material";
 import { supabase } from "../supabase/client";
 
@@ -103,6 +103,7 @@ export default function UserPublicProfile() {
 
   const [userData, setUserData] = useState(null);
   const [paymentMethods, setPaymentMethods] = useState([]);
+  const [meetingPlaces, setMeetingPlaces] = useState([]);
   const [provinceState, setProvinceState] = useState("");
   const [cityState, setCityState] = useState("");
   const [images, setImages] = useState([]);
@@ -181,6 +182,34 @@ export default function UserPublicProfile() {
       }
     };
     fetchPaymentMethods();
+  }, [userData]);
+
+  /* ---------- Cargar lugares de encuentro ---------- */
+  useEffect(() => {
+    const fetchMeetingPlaces = async () => {
+      if (!userData) return;
+
+      try {
+        const { data, error } = await supabase
+          .from("user_places")
+          .select("places(name)")
+          .eq("user_id", userData.id);
+
+        if (error) {
+          console.error("Error al obtener lugares de encuentro:", error);
+          setMeetingPlaces([]);
+        } else {
+          setMeetingPlaces(
+            (data || []).map((item) => item.places?.name).filter(Boolean),
+          );
+        }
+      } catch (err) {
+        console.error("Excepción cargando lugares de encuentro:", err);
+        setMeetingPlaces([]);
+      }
+    };
+
+    fetchMeetingPlaces();
   }, [userData]);
 
   /* ---------- Cargar imágenes del bucket ---------- */
@@ -517,6 +546,18 @@ export default function UserPublicProfile() {
                         .join(", ")}
                     </Typography>
                   </Stack>
+                  {/* Lugares de encuentro */}
+                  <Stack direction="row" spacing={0.5} alignItems="flex-start">
+                    <LocationOnOutlinedIcon
+                      sx={{ fontSize: 16, color: "text.secondary" }}
+                    />
+                    <Typography variant="body2" color="text.secondary">
+                      Lugares de encuentro:{<br />}
+                      {meetingPlaces.length > 0
+                        ? meetingPlaces.join(", ")
+                        : "No especificado"}
+                    </Typography>
+                  </Stack>
                 </Box>
               </Stack>
               <Stack
@@ -643,10 +684,11 @@ export default function UserPublicProfile() {
       {/* ============ Galería de Imágenes ============ */}
       <Box sx={{ mb: 3 }}>
         <Stack
-          direction="row"
+          direction={{ xs: "column", sm: "row" }}
           justifyContent="space-between"
-          alignItems="center"
-          sx={{ mb: 3 }}
+          alignItems={{ xs: "flex-start", sm: "center" }}
+          spacing={{ xs: 1.5, sm: 2 }}
+          sx={{ mb: 3, width: "100%" }}
         >
           <Box>
             <Typography variant="h5" fontWeight={700}>
@@ -668,14 +710,14 @@ export default function UserPublicProfile() {
             onClick={fetchUserImages}
             disabled={loadingImages}
             sx={{
-              position: "relative",
-              left: { xs: "40%", sm: "60%" },
-              transform: { xs: "translateX(-50%)", sm: "none" },
+              position: "static",
+              transform: "none",
+              flexShrink: 0,
               borderRadius: "0.75rem",
               fontSize: "0.75rem",
               padding: "4px 8px",
               textTransform: "none",
-              alignSelf: { xs: "flex-end", md: "center" },
+              alignSelf: { xs: "flex-start", sm: "center" },
             }}
           >
             Actualizar

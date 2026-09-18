@@ -261,37 +261,41 @@ export default function MyPublications() {
       <Divider sx={{ my: 4 }} />
 
       {/* Galería de Imágenes */}
-      <Box sx={{ mb: 3 }}>
+      <Stack gap={2} mb={3}>
         <Stack
-          direction="row"
+          display="flex"
+          flexDirection="row"
           justifyContent="space-between"
-          alignItems="center"
+          alignItems="flex-start"
+          flexWrap="wrap"
           sx={{ mb: 3 }}
         >
           <Box>
             <Typography variant="h5" fontWeight={600}>
               Galería Almacenada
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
               {images.length}{" "}
               {images.length === 1
                 ? "imagen encontrada"
                 : "imágenes encontradas"}
             </Typography>
           </Box>
-
-          <Button
-            startIcon={<RefreshIcon />}
-            variant="outlined"
-            size="small"
-            onClick={fetchUserImages}
-            disabled={loadingImages}
-            sx={{ borderRadius: 2 }}
-          >
-            Actualizar
-          </Button>
+          <Box>
+            <Button
+              startIcon={<RefreshIcon />}
+              variant="outlined"
+              size="small"
+              onClick={fetchUserImages}
+              disabled={loadingImages}
+              sx={{ borderRadius: 2 }}
+            >
+              Actualizar
+            </Button>
+          </Box>
         </Stack>
-
+      </Stack>
+      <Box>
         {loadingImages ? (
           <Box
             sx={{

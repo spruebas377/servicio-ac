@@ -237,21 +237,31 @@ export default function UserProfileCard() {
   };
 
   const getCityName = async (cityId) => {
-    const { data } = await supabase
-      .from("localidades")
-      .select("nombre")
-      .eq("id", cityId)
-      .single();
-    return data.nombre;
+    try {
+      const { data } = await supabase
+        .from("localidades")
+        .select("nombre")
+        .eq("id", cityId)
+        .single();
+      return data.nombre;
+    } catch (error) {
+      console.error(error);
+      return "";
+    }
   };
 
   const getProvinceName = async (provinceId) => {
-    const { data } = await supabase
-      .from("provincias")
-      .select("nombre")
-      .eq("id", provinceId)
-      .single();
-    return data.nombre;
+    try {
+      const { data } = await supabase
+        .from("provincias")
+        .select("nombre")
+        .eq("id", provinceId)
+        .single();
+      return data.nombre;
+    } catch (error) {
+      console.error(error);
+      return "";
+    }
   };
 
   const getGenderIcon = (gender) => {

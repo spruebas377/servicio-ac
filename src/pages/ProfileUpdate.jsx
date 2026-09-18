@@ -155,6 +155,8 @@ const ProfileUpdate = () => {
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState([]);
   const [provinces, setProvinces] = useState([]);
   const [locations, setLocations] = useState([]);
+  const [meetingPlaces, setMeetingPlaces] = useState([]);
+  const [selectedMeetingPlaces, setSelectedMeetingPlaces] = useState([]);
   const [selectedProvince, setSelectedProvince] = useState(
     user?.province || "",
   );
@@ -179,23 +181,35 @@ const ProfileUpdate = () => {
     const loadAll = async () => {
       setLoadingInitial(true);
       try {
-        const [gendersRes, paymentsRes, provincesRes] = await Promise.all([
-          supabase.from("gender").select("*").order("id", { ascending: true }),
-          supabase
-            .from("payment_methods")
-            .select("*")
-            .order("name", { ascending: true }),
-          supabase
-            .from("provincias")
-            .select("*")
-            .order("nombre", { ascending: true }),
-        ]);
+        const [gendersRes, paymentsRes, provincesRes, placesRes] =
+          await Promise.all([
+            supabase
+              .from("gender")
+              .select("*")
+              .order("id", { ascending: true }),
+
+            supabase
+              .from("payment_methods")
+              .select("*")
+              .order("name", { ascending: true }),
+
+            supabase
+              .from("provincias")
+              .select("*")
+              .order("nombre", { ascending: true }),
+
+            supabase
+              .from("places")
+              .select("*")
+              .order("name", { ascending: true }),
+          ]);
 
         if (cancelled) return;
 
         setGenders(gendersRes.data || []);
         setPaymentMethods(paymentsRes.data || []);
         setProvinces(provincesRes.data || []);
+        setMeetingPlaces(placesRes.data || []);
       } catch (error) {
         console.error("Error cargando catálogos:", error);
       } finally {
@@ -223,6 +237,12 @@ const ProfileUpdate = () => {
             .select("id_payment_methods")
             .eq("id_user", user.id),
         ]);
+        const [meetingPlacesRes] = await Promise.all([
+          supabase
+            .from("user_places")
+            .select("place_id")
+            .eq("user_id", user.id),
+        ]);
 
         if (cancelled) return;
 
@@ -249,6 +269,12 @@ const ProfileUpdate = () => {
         if (!paymentsRes.error && paymentsRes.data) {
           setSelectedPaymentMethods(
             paymentsRes.data.map((r) => r.id_payment_methods),
+          );
+        }
+
+        if (!meetingPlacesRes.error && meetingPlacesRes.data) {
+          setSelectedMeetingPlaces(
+            meetingPlacesRes.data.map((r) => r.place_id),
           );
         }
       } catch (error) {
@@ -290,8 +316,9 @@ const ProfileUpdate = () => {
 
     const hasChanges = Object.keys(userData).length > 1;
     const hasPayments = selectedPaymentMethods.length > 0;
+    const hasMeetingPlaces = selectedMeetingPlaces.length > 0;
 
-    if (!hasChanges && !hasPayments) {
+    if (!hasChanges && !hasPayments && !hasMeetingPlaces) {
       navigate("/");
       return;
     }
@@ -302,9 +329,10 @@ const ProfileUpdate = () => {
         const updatedUserData = await updateUserData(userData);
         setUser((prevUser) => ({ ...prevUser, ...updatedUserData }));
       }
-      if (hasPayments) {
-        await saveSelectedPaymentMethods();
-      }
+      if (hasPayments) await saveSelectedPaymentMethods();
+
+      if (hasMeetingPlaces) await saveSelectedMeetingPlaces();
+
       navigate("/");
     } catch (error) {
       console.error("Error guardando perfil:", error);
@@ -356,6 +384,12 @@ const ProfileUpdate = () => {
     );
   };
 
+  const handleMeetingPlaceToggle = (id, isChecked) => {
+    setSelectedMeetingPlaces((prev) =>
+      isChecked ? [...prev, id] : prev.filter((x) => x !== id),
+    );
+  };
+
   /* ---------- Guardar métodos de pago (insert bulk, sin duplicados) ---------- */
   const saveSelectedPaymentMethods = async () => {
     const { data: existing, error: fetchError } = await supabase
@@ -389,6 +423,47 @@ const ProfileUpdate = () => {
         .delete()
         .eq("id_user", user.id)
         .in("id_payment_methods", toRemove);
+      if (error) throw error;
+    }
+  };
+
+  /* ---------- Guardar lugares de encuentro ---------- */
+  const saveSelectedMeetingPlaces = async () => {
+    const { data: existing, error: fetchError } = await supabase
+      .from("user_places")
+      .select("place_id")
+      .eq("user_id", user.id);
+
+    if (fetchError) throw fetchError;
+
+    const existingIds = existing.map((r) => r.place_id);
+
+    const toAdd = selectedMeetingPlaces.filter(
+      (id) => !existingIds.includes(id),
+    );
+
+    const toRemove = existingIds.filter(
+      (id) => !selectedMeetingPlaces.includes(id),
+    );
+
+    if (toAdd.length) {
+      const { error } = await supabase.from("user_places").insert(
+        toAdd.map((place_id) => ({
+          user_id: user.id,
+          place_id,
+        })),
+      );
+
+      if (error) throw error;
+    }
+
+    if (toRemove.length) {
+      const { error } = await supabase
+        .from("user_places")
+        .delete()
+        .eq("user_id", user.id)
+        .in("place_id", toRemove);
+
       if (error) throw error;
     }
   };
@@ -732,6 +807,34 @@ const ProfileUpdate = () => {
                         checked={checked}
                         onChange={(e) =>
                           handlePaymentMethodToggle(pm.id, e.target.checked)
+                        }
+                      />
+                    }
+                    label={pm.name || pm.nombre}
+                  />
+                );
+              })}
+            </FormGroup>
+          </FormControl>
+        </Box>
+
+        {/* Lugares de encuentro */}
+        <SectionLabel icon={<LocationOnOutlinedIcon />}>
+          Lugares de encuentro
+        </SectionLabel>
+        <Box sx={{ mb: 3.5 }}>
+          <FormControl component="fieldset" fullWidth>
+            <FormGroup row>
+              {meetingPlaces.map((pm) => {
+                const checked = selectedMeetingPlaces.includes(pm.id);
+                return (
+                  <FormControlLabel
+                    key={pm.id}
+                    control={
+                      <Checkbox
+                        checked={checked}
+                        onChange={(e) =>
+                          handleMeetingPlaceToggle(pm.id, e.target.checked)
                         }
                       />
                     }

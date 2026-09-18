@@ -26,6 +26,11 @@ import {
   Button,
   MenuItem,
 } from "@mui/material";
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { styled, alpha, useTheme } from "@mui/material/styles";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
@@ -40,6 +45,7 @@ import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupported
 import RefreshIcon from "@mui/icons-material/Refresh";
 import PersonSearchOutlinedIcon from "@mui/icons-material/PersonSearchOutlined";
 import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
+import FilterListOffIcon from "@mui/icons-material/FilterListOff";
 import { supabase } from "../supabase/client";
 
 const BUCKET_NAME = "imagenes";
@@ -566,133 +572,192 @@ const UserList = ({ users = [] }) => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Barra de Filtros y Búsqueda */}
-      <Box sx={{ mb: 4 }}>
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={2}
-          justifyContent="space-between"
-          alignItems={{ xs: "stretch", sm: "center" }}
+      <Accordion
+        disableGutters
+        sx={{
+          mb: 3,
+          borderRadius: "1.25rem !important",
+          border: `1px solid ${alpha(theme.palette.divider, 0.7)}`,
+          backgroundColor: theme.palette.background.paper,
+          boxShadow:
+            theme.palette.mode === "light"
+              ? "0 6px 24px rgba(0,0,0,0.06)"
+              : "0 6px 24px rgba(0,0,0,0.22)",
+          overflow: "hidden",
+          "&::before": { display: "none" },
+        }}
+      >
+        <AccordionSummary
+          expandIcon={<ArrowDropDownIcon />}
+          aria-controls="panel1-content"
+          id="panel1-header"
+          sx={{
+            px: { xs: 2, sm: 3 },
+            py: 0.75,
+            minHeight: 62,
+            "&.Mui-expanded": { minHeight: 62 },
+            "& .MuiAccordionSummary-content": {
+              my: 1.25,
+              alignItems: "center",
+              gap: 1,
+            },
+            "& .MuiAccordionSummary-expandIconWrapper": {
+              color: "primary.main",
+            },
+          }}
         >
-          {/* Input de Búsqueda */}
-          <TextField
-            size="small"
-            placeholder="Buscar por nombre o correo..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            sx={{
-              maxWidth: { sm: 380 },
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "1rem",
-              },
-            }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon fontSize="small" color="action" />
-                </InputAdornment>
-              ),
-              ...(searchTerm && {
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton size="small" onClick={() => setSearchTerm("")}>
-                      <CloseIcon fontSize="small" />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }),
-            }}
-          />
-
-          {/* Filtros de Visibilidad */}
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Chip
-              label={`Todos (${users.length})`}
-              clickable
-              color={filterMode === "all" ? "primary" : "default"}
-              variant={filterMode === "all" ? "filled" : "outlined"}
-              onClick={() => setFilterMode("all")}
-              sx={{ borderRadius: "0.75rem", fontWeight: 600 }}
-            />
-            <Chip
-              label="Verificados"
-              clickable
-              color={filterMode === "verified" ? "success" : "default"}
-              variant={filterMode === "verified" ? "filled" : "outlined"}
-              onClick={() => setFilterMode("verified")}
-              sx={{ borderRadius: "0.75rem", fontWeight: 600 }}
-            />
-            <Chip
-              label="No Verificados"
-              clickable
-              color={filterMode === "not-verified" ? "default" : "default"}
-              variant={filterMode === "not-verified" ? "filled" : "outlined"}
-              onClick={() => setFilterMode("not-verified")}
-              sx={{ borderRadius: "0.75rem", fontWeight: 600 }}
-            />
-          </Stack>
-        </Stack>
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={2}
-          sx={{ my: 2 }}
+          <SearchIcon color="primary" fontSize="small" />
+          <Box>
+            <Typography variant="subtitle1" fontWeight={700}>
+              Buscar y filtrar usuarios
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Nombre, correo, provincia y ciudad
+            </Typography>
+          </Box>
+        </AccordionSummary>
+        <AccordionDetails
+          sx={{
+            px: { xs: 2, sm: 3 },
+            pt: 0,
+            pb: 3,
+            borderTop: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+          }}
         >
-          {/* Provincia */}
-          <TextField
-            select
-            size="small"
-            label="Provincia"
-            value={selectedProvince}
-            onChange={(e) => {
-              setSelectedProvince(e.target.value);
-              setSelectedCity("");
-            }}
-            sx={{ minWidth: 220 }}
-            disabled={loadingLocations}
-          >
-            <MenuItem value="">Todas las provincias</MenuItem>
+          {/* Barra de Filtros y Búsqueda */}
+          <Box sx={{ pt: 2, mb: 1 }}>
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={2}
+              justifyContent="space-between"
+              alignItems={{ xs: "stretch", sm: "center" }}
+            >
+              {/* Input de Búsqueda */}
+              <TextField
+                size="small"
+                placeholder="Buscar por nombre o correo..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                sx={{
+                  maxWidth: { sm: 380 },
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "1rem",
+                  },
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon fontSize="small" color="action" />
+                    </InputAdornment>
+                  ),
+                  ...(searchTerm && {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          size="small"
+                          onClick={() => setSearchTerm("")}
+                        >
+                          <CloseIcon fontSize="small" />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }),
+                }}
+              />
 
-            {provinces.map((province) => (
-              <MenuItem key={province.id} value={province.id}>
-                {province.nombre}
-              </MenuItem>
-            ))}
-          </TextField>
+              {/* Filtros de Visibilidad */}
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Chip
+                  label={`Todos (${users.length})`}
+                  clickable
+                  color={filterMode === "all" ? "primary" : "default"}
+                  variant={filterMode === "all" ? "filled" : "outlined"}
+                  onClick={() => setFilterMode("all")}
+                  sx={{ borderRadius: "0.75rem", fontWeight: 600 }}
+                />
+                <Chip
+                  label="Verificados"
+                  clickable
+                  color={filterMode === "verified" ? "success" : "default"}
+                  variant={filterMode === "verified" ? "filled" : "outlined"}
+                  onClick={() => setFilterMode("verified")}
+                  sx={{ borderRadius: "0.75rem", fontWeight: 600 }}
+                />
+                <Chip
+                  label="No Verificados"
+                  clickable
+                  color={filterMode === "not-verified" ? "default" : "default"}
+                  variant={
+                    filterMode === "not-verified" ? "filled" : "outlined"
+                  }
+                  onClick={() => setFilterMode("not-verified")}
+                  sx={{ borderRadius: "0.75rem", fontWeight: 600 }}
+                />
+              </Stack>
+            </Stack>
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={2}
+              sx={{ my: 2 }}
+            >
+              {/* Provincia */}
+              <TextField
+                select
+                size="small"
+                label="Provincia"
+                value={selectedProvince}
+                onChange={(e) => {
+                  setSelectedProvince(e.target.value);
+                  setSelectedCity("");
+                }}
+                sx={{ minWidth: 220 }}
+                disabled={loadingLocations}
+              >
+                <MenuItem value="">Todas las provincias</MenuItem>
 
-          {/* Ciudad */}
-          <TextField
-            select
-            size="small"
-            label="Ciudad"
-            value={selectedCity}
-            onChange={(e) => setSelectedCity(e.target.value)}
-            sx={{ minWidth: 220 }}
-            disabled={loadingLocations || !selectedProvince}
-          >
-            <MenuItem value="">Todas las ciudades</MenuItem>
+                {provinces.map((province) => (
+                  <MenuItem key={province.id} value={province.id}>
+                    {province.nombre}
+                  </MenuItem>
+                ))}
+              </TextField>
 
-            {filteredCities.map((city) => (
-              <MenuItem key={city.id} value={String(city.id)}>
-                {city.nombre}
-              </MenuItem>
-            ))}
-          </TextField>
+              {/* Ciudad */}
+              <TextField
+                select
+                size="small"
+                label="Ciudad"
+                value={selectedCity}
+                onChange={(e) => setSelectedCity(e.target.value)}
+                sx={{ minWidth: 220 }}
+                disabled={loadingLocations || !selectedProvince}
+              >
+                <MenuItem value="">Todas las ciudades</MenuItem>
 
-          {/* Limpiar filtros */}
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={() => {
-              setSearchTerm("");
-              setSelectedProvince("");
-              setSelectedCity("");
-              setFilterMode("all");
-            }}
-          >
-            Limpiar filtros
-          </Button>
-        </Stack>
-      </Box>
+                {filteredCities.map((city) => (
+                  <MenuItem key={city.id} value={String(city.id)}>
+                    {city.nombre}
+                  </MenuItem>
+                ))}
+              </TextField>
+
+              {/* Limpiar filtros */}
+              <Button
+                variant="outlined"
+                startIcon={<FilterListOffIcon />}
+                onClick={() => navigate(`/user/${user.id}`)}
+                sx={{
+                  borderRadius: "0.75rem",
+                  textTransform: "none",
+                  fontWeight: 600,
+                }}
+              >
+                Limpiar filtros
+              </Button>
+            </Stack>
+          </Box>
+        </AccordionDetails>
+      </Accordion>
 
       {/* Grid de Tarjetas de Usuarios */}
       {filteredUsers.length === 0 ? (
