@@ -4,7 +4,7 @@ import { TaskContextProvider } from "./context/TaskContext";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import Register from "./pages/Register";
-import Login from "./pages/Login";
+import Login from "./pages/Login_Google";
 import ProfileUpdate from "./pages/ProfileUpdate";
 import LogOut from "./pages/LogOut";
 import NavBarWithMessages from "./components/NavBarWithMessages";

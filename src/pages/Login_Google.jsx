@@ -1,4 +1,4 @@
-// src/pages/Register.jsx
+// src/pages/Login.jsx
 import { useEffect, useState } from "react";
 import {
   Box,
@@ -18,14 +18,12 @@ import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
-import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
+import LoginOutlinedIcon from "@mui/icons-material/LoginOutlined";
+import GoogleIcon from "@mui/icons-material/Google";
 import Diversity1Icon from "@mui/icons-material/Diversity1";
-import { NavLink, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useAuth } from "../context/AuthContext";
-
-/* ------------------------------------------------------------------ */
-/*  Estilos                                                            */
-/* ------------------------------------------------------------------ */
+import { supabase } from "../supabase/client";
 
 const PremiumPaper = styled(Paper)(({ theme }) => ({
   width: "100%",
@@ -38,13 +36,6 @@ const PremiumPaper = styled(Paper)(({ theme }) => ({
     theme.palette.mode === "light"
       ? "0 20px 35px -8px rgba(0,0,0,0.04), 0 8px 18px -6px rgba(0,0,0,0.02), 0 0 0 1px rgba(0,0,0,0.01)"
       : "0 20px 35px -8px rgba(0,0,0,0.5), 0 8px 18px -6px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.04)",
-  transition: "box-shadow 0.3s ease",
-  "&:hover": {
-    boxShadow:
-      theme.palette.mode === "light"
-        ? "0 30px 50px -12px rgba(0,0,0,0.08), 0 12px 24px -8px rgba(0,0,0,0.03), 0 0 0 1px rgba(0,0,0,0.02)"
-        : "0 30px 50px -12px rgba(0,0,0,0.65), 0 12px 24px -8px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06)",
-  },
   [theme.breakpoints.down("sm")]: {
     borderRadius: "2rem",
     padding: theme.spacing(3.5, 2.5),
@@ -76,7 +67,6 @@ const PrimaryButton = styled(Button)(({ theme }) => ({
   backgroundColor: theme.palette.text.primary,
   color: theme.palette.background.paper,
   boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
-  transition: "all 0.2s ease",
   "&:hover": {
     backgroundColor: alpha(theme.palette.text.primary, 0.9),
     boxShadow: "0 6px 18px rgba(0,0,0,0.12)",
@@ -88,7 +78,6 @@ const PrimaryButton = styled(Button)(({ theme }) => ({
   },
 }));
 
-/* ---------- Estilo compartido para inputs ---------- */
 const fieldSx = (theme) => ({
   "& .MuiOutlinedInput-root": {
     borderRadius: 2.5,
@@ -98,16 +87,10 @@ const fieldSx = (theme) => ({
         : alpha("#fff", 0.03),
     transition: "all 0.2s ease",
     "& fieldset": { borderColor: theme.palette.divider },
-    "&:hover fieldset": {
-      borderColor: alpha(theme.palette.text.primary, 0.2),
-    },
+    "&:hover fieldset": { borderColor: alpha(theme.palette.text.primary, 0.2) },
     "&.Mui-focused fieldset": {
       borderColor: alpha(theme.palette.text.primary, 0.5),
       borderWidth: "1.5px",
-    },
-    "&.Mui-focused": {
-      backgroundColor:
-        theme.palette.mode === "light" ? "#fff" : alpha("#fff", 0.05),
     },
   },
   "& .MuiInputLabel-root": {
@@ -116,34 +99,46 @@ const fieldSx = (theme) => ({
   },
 });
 
-/* ------------------------------------------------------------------ */
-/*  Componente                                                         */
-/* ------------------------------------------------------------------ */
-
-const Register = () => {
+const Login = () => {
   const theme = useTheme();
-  const { user, signup, loading } = useAuth();
+  const { user, login, loading } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-  const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) {
-      navigate("/");
-    }
-  }, [user]);
+    if (user) navigate("/");
+  }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     try {
-      await signup(email, password);
+      await login(email, password);
       navigate("/");
     } catch (err) {
-      console.log(err);
-      setError(err?.message || "No se pudo crear la cuenta.");
+      console.error(err);
+      setError("Datos incorrectos. Si no tienes cuenta, regístrate.");
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setError("");
+
+    try {
+      const { error: googleError } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+
+      if (googleError) throw googleError;
+    } catch (err) {
+      console.error("Error al iniciar sesión con Google:", err);
+      setError("No se pudo iniciar sesión con Google. Intentá nuevamente.");
     }
   };
 
@@ -158,7 +153,6 @@ const Register = () => {
       }}
     >
       <PremiumPaper elevation={0}>
-        {/* Logo + títulos */}
         <Box
           sx={{
             display: "flex",
@@ -171,7 +165,6 @@ const Register = () => {
           <LogoBadge>
             <Diversity1Icon sx={{ fontSize: 26 }} />
           </LogoBadge>
-
           <Typography
             variant="h5"
             sx={{
@@ -181,14 +174,13 @@ const Register = () => {
               mb: 0.5,
             }}
           >
-            Crear cuenta
+            Iniciar sesión
           </Typography>
           <Typography variant="body2" sx={{ color: "text.secondary" }}>
-            Regístrate para gestionar tus contenidos
+            Ingresa para continuar
           </Typography>
         </Box>
 
-        {/* Error */}
         {error && (
           <Alert
             severity="error"
@@ -199,23 +191,16 @@ const Register = () => {
               fontSize: "0.85rem",
               border: `1px solid ${alpha("#d32f2f", 0.2)}`,
               backgroundColor: alpha("#d32f2f", 0.06),
-              color: theme.palette.mode === "light" ? "#b30000" : "#ef9a9a",
-              "& .MuiAlert-icon": { color: "inherit" },
             }}
           >
             {error}
           </Alert>
         )}
 
-        {/* Formulario */}
         <Box
           component="form"
           onSubmit={handleSubmit}
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 2.5,
-          }}
+          sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}
         >
           <TextField
             fullWidth
@@ -242,11 +227,11 @@ const Register = () => {
             fullWidth
             type={showPassword ? "text" : "password"}
             label="Contraseña"
-            placeholder="Mínimo 6 caracteres"
+            placeholder="Ingresa tu contraseña"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            autoComplete="new-password"
+            autoComplete="current-password"
             sx={fieldSx(theme)}
             InputProps={{
               startAdornment: (
@@ -289,43 +274,63 @@ const Register = () => {
               loading ? (
                 <CircularProgress size={16} color="inherit" />
               ) : (
-                <PersonAddAltOutlinedIcon fontSize="small" />
+                <LoginOutlinedIcon fontSize="small" />
               )
             }
           >
-            {loading ? "Creando cuenta…" : "Crear cuenta"}
+            {loading ? "Ingresando…" : "Iniciar sesión"}
           </PrimaryButton>
         </Box>
 
-        {/* Divisor */}
+        <Button
+          type="button"
+          fullWidth
+          variant="outlined"
+          onClick={handleGoogleLogin}
+          disabled={loading}
+          startIcon={<GoogleIcon />}
+          sx={{
+            mt: 2.5,
+            py: 1.2,
+            borderRadius: 999,
+            textTransform: "none",
+            fontWeight: 600,
+            fontSize: "0.95rem",
+            borderColor: "divider",
+            color: "text.primary",
+            "&:hover": {
+              borderColor: "text.primary",
+              backgroundColor: alpha(theme.palette.text.primary, 0.04),
+            },
+          }}
+        >
+          Continuar con Google
+        </Button>
+
         <Divider sx={{ my: 3 }} />
 
-        {/* Link a login */}
         <Stack
           direction="row"
           spacing={0.5}
           justifyContent="center"
           alignItems="center"
+          flexWrap="wrap"
         >
           <Typography variant="body2" sx={{ color: "text.secondary" }}>
-            ¿Ya tienes cuenta?
+            ¿No tienes cuenta?
           </Typography>
           <Typography
-            component={NavLink}
-            to="/login"
+            component={Link}
+            to="/register"
             variant="body2"
             sx={{
               color: "text.primary",
               fontWeight: 600,
               textDecoration: "none",
-              transition: "color 0.2s ease, transform 0.2s ease",
-              "&:hover": {
-                color: alpha(theme.palette.text.primary, 0.75),
-                transform: "translateX(2px)",
-              },
+              "&:hover": { color: alpha(theme.palette.text.primary, 0.75) },
             }}
           >
-            Inicia sesión
+            Regístrate
           </Typography>
         </Stack>
       </PremiumPaper>
@@ -333,4 +338,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default Login;

@@ -45,7 +45,6 @@ import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupported
 import RefreshIcon from "@mui/icons-material/Refresh";
 import PersonSearchOutlinedIcon from "@mui/icons-material/PersonSearchOutlined";
 import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
-import FilterListOffIcon from "@mui/icons-material/FilterListOff";
 import { supabase } from "../supabase/client";
 
 const BUCKET_NAME = "imagenes";
@@ -65,6 +64,9 @@ const UserCardWrapper = styled(Card)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
   height: "100%",
+  width: "100%",
+  minWidth: 0,
+  boxSizing: "border-box",
   "&:hover": {
     transform: "translateY(-4px)",
     boxShadow:
@@ -529,6 +531,13 @@ const UserList = ({ users = [] }) => {
     });
   };
 
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setSelectedProvince("");
+    setSelectedCity("");
+    setFilterMode("all");
+  };
+
   // Filtrado de usuarios según búsqueda y visibilidad
   const filteredUsers = (users || []).filter((user) => {
     const search = searchTerm.toLowerCase().trim();
@@ -744,12 +753,17 @@ const UserList = ({ users = [] }) => {
               {/* Limpiar filtros */}
               <Button
                 variant="outlined"
-                startIcon={<FilterListOffIcon />}
-                onClick={() => navigate(`/user/${user.id}`)}
+                size="small"
+                type="button"
+                onClick={handleClearFilters}
                 sx={{
+                  minHeight: 40,
+                  px: 2,
                   borderRadius: "0.75rem",
                   textTransform: "none",
                   fontWeight: 600,
+                  whiteSpace: "nowrap",
+                  alignSelf: { xs: "stretch", sm: "center" },
                 }}
               >
                 Limpiar filtros
@@ -794,9 +808,16 @@ const UserList = ({ users = [] }) => {
           )}
         </Paper>
       ) : (
-        <Grid container spacing={3}>
+        <Grid container spacing={3} sx={{ alignItems: "stretch" }}>
           {filteredUsers.map((user) => (
-            <Grid item xs={12} sm={6} md={4} key={user.id}>
+            <Grid
+              item
+              xs={12}
+              sm={6}
+              md={4}
+              key={user.id}
+              sx={{ display: "flex", minWidth: 0 }}
+            >
               <Fade in timeout={350}>
                 <div>
                   <UserCardItem

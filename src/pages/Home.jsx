@@ -23,18 +23,8 @@ const Home = () => {
   return (
     <>
       {/* Lista de usuarios */}
-      <Box
-        sx={{
-          display: "flex",
-          flexWrap: "wrap",
-          justifyContent: "center",
-          alignItems: "center",
-          alignContent: "center",
-          gap: 2,
-        }}
-      >
-        <UserList users={usersList} />
-      </Box>
+
+      <UserList users={usersList} />
     </>
   );
 };
