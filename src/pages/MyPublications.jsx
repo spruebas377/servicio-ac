@@ -82,6 +82,14 @@ export default function MyPublications() {
     }
   }, [user, authLoading, navigate]);
 
+  /* ---------- Scroll al top ---------- */
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, []);
+
   /* ---------- Cargar imágenes del usuario desde Supabase Storage ---------- */
   const fetchUserImages = useCallback(async () => {
     if (!user?.id) return;

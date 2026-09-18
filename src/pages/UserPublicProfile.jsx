@@ -115,6 +115,14 @@ export default function UserPublicProfile() {
     severity: "info",
   });
 
+  /* ---------- Scroll al top ---------- */
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, []);
+
   /* ---------- Cargar datos del usuario ---------- */
   useEffect(() => {
     const fetchUser = async () => {

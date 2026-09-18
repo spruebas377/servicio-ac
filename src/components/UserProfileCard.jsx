@@ -193,6 +193,14 @@ export default function UserProfileCard() {
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [places, setPlaces] = useState([]);
 
+  /* ---------- Scroll al top ---------- */
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, []);
+
   useEffect(() => {
     const getCurrentUser = async () => {
       setLoading(true);

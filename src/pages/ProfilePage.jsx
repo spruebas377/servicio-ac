@@ -1,8 +1,17 @@
 // src/pages/ProfilePage.jsx
 import { Box, Container, Typography } from "@mui/material";
 import UserProfileCard from "../components/UserProfileCard";
+import { useEffect } from "react";
 
 export default function ProfilePage() {
+  /* ---------- Scroll al top ---------- */
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, []);
+
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
       <Box

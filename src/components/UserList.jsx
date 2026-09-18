@@ -163,6 +163,13 @@ const UserCardItem = ({ user, onPreviewImage, onCopyUrl }) => {
     fetchUserBucketImages();
   }, [fetchUserBucketImages]);
 
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, []);
+
   const userName = user.name || user.email?.split("@")[0] || "Usuario";
   const userInitials = (userName || "?")[0].toUpperCase();
 

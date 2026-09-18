@@ -164,6 +164,14 @@ const ProfileUpdate = () => {
   const [loadingInitial, setLoadingInitial] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  /* ---------- Scroll al top ---------- */
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, []);
+
   /* ---------- Carga inicial (catálogos + datos del usuario + pagos) ---------- */
   useEffect(() => {
     let cancelled = false;
