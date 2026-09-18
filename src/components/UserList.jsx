@@ -170,7 +170,7 @@ const UserCardItem = ({ user, onPreviewImage, onCopyUrl }) => {
     <UserCardWrapper
       sx={{
         flex: 1,
-        minWidth: 350,
+        minWidth: 300,
         border: user.featured
           ? `2px solid ${theme.palette.warning.main}`
           : "1px solid " + alpha(theme.palette.divider, 0.5),
