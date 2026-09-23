@@ -148,8 +148,8 @@ const ProfileUpdate = () => {
   );
   const isFirstLogin = Boolean(
     location.state?.firstLogin ||
-      searchParams.get("firstLogin") === "true" ||
-      user?.isFirstLogin,
+    searchParams.get("firstLogin") === "true" ||
+    user?.isFirstLogin,
   );
 
   const [phone, setPhone] = useState(user?.phone || "");
@@ -170,6 +170,8 @@ const ProfileUpdate = () => {
   const [locations, setLocations] = useState([]);
   const [meetingPlaces, setMeetingPlaces] = useState([]);
   const [selectedMeetingPlaces, setSelectedMeetingPlaces] = useState([]);
+  const [services, setServices] = useState([]);
+  const [selectedServices, setSelectedServices] = useState([]);
   const [selectedProvince, setSelectedProvince] = useState(
     user?.province || "",
   );
@@ -194,7 +196,7 @@ const ProfileUpdate = () => {
     const loadAll = async () => {
       setLoadingInitial(true);
       try {
-        const [gendersRes, paymentsRes, provincesRes, placesRes] =
+        const [gendersRes, paymentsRes, provincesRes, placesRes, servicesRes] =
           await Promise.all([
             supabase
               .from("gender")
@@ -215,6 +217,11 @@ const ProfileUpdate = () => {
               .from("places")
               .select("*")
               .order("name", { ascending: true }),
+
+            supabase
+              .from("services")
+              .select("*")
+              .order("name", { ascending: true }),
           ]);
 
         if (cancelled) return;
@@ -223,6 +230,7 @@ const ProfileUpdate = () => {
         setPaymentMethods(paymentsRes.data || []);
         setProvinces(provincesRes.data || []);
         setMeetingPlaces(placesRes.data || []);
+        setServices(servicesRes.data || []);
       } catch (error) {
         console.error("Error cargando catálogos:", error);
       } finally {
@@ -257,12 +265,16 @@ const ProfileUpdate = () => {
 
     const fetchUserData = async () => {
       try {
-        const [userRes, paymentsRes] = await Promise.all([
+        const [userRes, paymentsRes, servicesRes] = await Promise.all([
           supabase.from("user_data").select("*").eq("id", user.id).single(),
           supabase
             .from("user_payment")
             .select("id_payment_methods")
             .eq("id_user", user.id),
+          supabase
+            .from("user_services")
+            .select("service_id")
+            .eq("user_id", user.id),
         ]);
         const [meetingPlacesRes] = await Promise.all([
           supabase
@@ -304,6 +316,10 @@ const ProfileUpdate = () => {
             meetingPlacesRes.data.map((r) => r.place_id),
           );
         }
+
+        if (!servicesRes.error && servicesRes.data) {
+          setSelectedServices(servicesRes.data.map((r) => r.service_id));
+        }
       } catch (error) {
         console.error("Error cargando datos del usuario:", error);
       }
@@ -344,8 +360,9 @@ const ProfileUpdate = () => {
     const hasChanges = Object.keys(userData).length > 1;
     const hasPayments = selectedPaymentMethods.length > 0;
     const hasMeetingPlaces = selectedMeetingPlaces.length > 0;
+    const hasServices = selectedServices.length > 0;
 
-    if (!hasChanges && !hasPayments && !hasMeetingPlaces) {
+    if (!hasChanges && !hasPayments && !hasMeetingPlaces && !hasServices) {
       try {
         await supabase.auth.updateUser({
           data: { profile_completed: true },
@@ -370,6 +387,8 @@ const ProfileUpdate = () => {
       if (hasPayments) await saveSelectedPaymentMethods();
 
       if (hasMeetingPlaces) await saveSelectedMeetingPlaces();
+
+      if (hasServices) await saveSelectedServices();
 
       try {
         await supabase.auth.updateUser({
@@ -418,6 +437,12 @@ const ProfileUpdate = () => {
 
   const handleMeetingPlaceToggle = (id, isChecked) => {
     setSelectedMeetingPlaces((prev) =>
+      isChecked ? [...prev, id] : prev.filter((x) => x !== id),
+    );
+  };
+
+  const handleServiceToggle = (id, isChecked) => {
+    setSelectedServices((prev) =>
       isChecked ? [...prev, id] : prev.filter((x) => x !== id),
     );
   };
@@ -496,6 +521,40 @@ const ProfileUpdate = () => {
         .eq("user_id", user.id)
         .in("place_id", toRemove);
 
+      if (error) throw error;
+    }
+  };
+
+  /* ---------- Guardar servicios ---------- */
+  const saveSelectedServices = async () => {
+    const { data: existing, error: fetchError } = await supabase
+      .from("user_services")
+      .select("service_id")
+      .eq("user_id", user.id);
+
+    if (fetchError) throw fetchError;
+
+    const existingIds = existing.map((r) => r.service_id);
+
+    const toAdd = selectedServices.filter((id) => !existingIds.includes(id));
+    const toRemove = existingIds.filter((id) => !selectedServices.includes(id));
+
+    if (toAdd.length) {
+      const { error } = await supabase.from("user_services").insert(
+        toAdd.map((service_id) => ({
+          user_id: user.id,
+          service_id,
+        })),
+      );
+      if (error) throw error;
+    }
+
+    if (toRemove.length) {
+      const { error } = await supabase
+        .from("user_services")
+        .delete()
+        .eq("user_id", user.id)
+        .in("service_id", toRemove);
       if (error) throw error;
     }
   };
@@ -587,7 +646,8 @@ const ProfileUpdate = () => {
               variant="body2"
               sx={{ color: "text.secondary", fontSize: "0.85rem" }}
             >
-              Para brindarte la mejor experiencia y configurar tu cuenta, por favor completá tu información personal y de ubicación.
+              Para brindarte la mejor experiencia y configurar tu cuenta, por
+              favor completá tu información personal y de ubicación.
             </Typography>
           </Alert>
         )}
@@ -822,14 +882,14 @@ const ProfileUpdate = () => {
 
         {/* About me */}
         <SectionLabel icon={<QuestionAnswerOutlined />}>
-          Contanos qué servicios ofrecés, y qué buscás
+          Contanos cómo sos
         </SectionLabel>
         <Box sx={{ mb: 3.5 }}>
           <TextField
             fullWidth
             multiline
-            minRows={3}
-            label="¿Cómo sos y qué servicios ofrecés?"
+            minRows={5}
+            label="¿Cómo sos?"
             value={aboutMe}
             onChange={(e) => setAboutMe(e.target.value)}
             sx={fieldSx(theme)}
@@ -899,6 +959,34 @@ const ProfileUpdate = () => {
                       />
                     }
                     label={pm.name || pm.nombre}
+                  />
+                );
+              })}
+            </FormGroup>
+          </FormControl>
+        </Box>
+
+        {/* Servicios */}
+        <SectionLabel icon={<InfoOutlinedIcon />}>
+          Servicios que ofrecés
+        </SectionLabel>
+        <Box sx={{ mb: 3.5 }}>
+          <FormControl component="fieldset" fullWidth>
+            <FormGroup row>
+              {services.map((s) => {
+                const checked = selectedServices.includes(s.id);
+                return (
+                  <FormControlLabel
+                    key={s.id}
+                    control={
+                      <Checkbox
+                        checked={checked}
+                        onChange={(e) =>
+                          handleServiceToggle(s.id, e.target.checked)
+                        }
+                      />
+                    }
+                    label={s.name || s.nombre}
                   />
                 );
               })}

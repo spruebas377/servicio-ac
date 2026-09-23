@@ -44,6 +44,7 @@ import HeightOutlinedIcon from "@mui/icons-material/HeightOutlined";
 import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
 import PaymentIcon from "@mui/icons-material/Payment";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
+import RoomServiceIcon from "@mui/icons-material/RoomService";
 import { QuestionAnswerOutlined } from "@mui/icons-material";
 import { supabase } from "../supabase/client";
 
@@ -104,6 +105,7 @@ export default function UserPublicProfile() {
   const [userData, setUserData] = useState(null);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [meetingPlaces, setMeetingPlaces] = useState([]);
+  const [services, setServices] = useState([]);
   const [provinceState, setProvinceState] = useState("");
   const [cityState, setCityState] = useState("");
   const [images, setImages] = useState([]);
@@ -210,6 +212,34 @@ export default function UserPublicProfile() {
     };
 
     fetchMeetingPlaces();
+  }, [userData]);
+
+  /* ---------- Cargar servicios prestados ---------- */
+  useEffect(() => {
+    const fetchServices = async () => {
+      if (!userData) return;
+
+      try {
+        const { data, error } = await supabase
+          .from("user_services")
+          .select("services(name)")
+          .eq("user_id", userData.id);
+
+        if (error) {
+          console.error("Error al obtener servicios:", error);
+          setServices([]);
+        } else {
+          setServices(
+            (data || []).map((item) => item.services?.name).filter(Boolean),
+          );
+        }
+      } catch (err) {
+        console.error("Excepción cargando servicios:", err);
+        setServices([]);
+      }
+    };
+
+    fetchServices();
   }, [userData]);
 
   /* ---------- Cargar imágenes del bucket ---------- */
@@ -569,6 +599,18 @@ export default function UserPublicProfile() {
                       Lugares de encuentro:{<br />}
                       {meetingPlaces.length > 0
                         ? meetingPlaces.join(", ")
+                        : "No especificado"}
+                    </Typography>
+                  </Stack>
+                  {/* Servicios prestados */}
+                  <Stack direction="row" spacing={0.5} alignItems="flex-start">
+                    <RoomServiceIcon
+                      sx={{ fontSize: 16, color: "text.secondary" }}
+                    />
+                    <Typography variant="body2" color="text.secondary">
+                      Servicios prestados:{<br />}
+                      {services.length > 0
+                        ? services.join(", ")
                         : "No especificado"}
                     </Typography>
                   </Stack>
