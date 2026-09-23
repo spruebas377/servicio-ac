@@ -99,7 +99,7 @@ const fieldSx = (theme) => ({
 
 const Login = () => {
   const theme = useTheme();
-  const { user, login, loading } = useAuth();
+  const { user, userData, login, loading } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -107,15 +107,25 @@ const Login = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (user) navigate("/");
-  }, [user, navigate]);
+    if (user && userData !== null) {
+      if (userData?.isFirstLogin) {
+        navigate("/profile-update", { state: { firstLogin: true } });
+      } else {
+        navigate("/");
+      }
+    }
+  }, [user, userData, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     try {
-      await login(email, password);
-      navigate("/");
+      const uData = await login(email, password);
+      if (uData?.isFirstLogin) {
+        navigate("/profile-update", { state: { firstLogin: true } });
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       console.error(err);
       setError("Datos incorrectos. Si no tienes cuenta, regístrate.");

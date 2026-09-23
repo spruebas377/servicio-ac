@@ -1,5 +1,5 @@
 // src/pages/ProfileUpdate.jsx
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import AvatarUploader from "../components/AvatarUploader";
 import {
   Button,
@@ -19,6 +19,7 @@ import {
   FormGroup,
   FormControlLabel,
   Checkbox,
+  Alert,
 } from "@mui/material";
 import { styled, alpha, useTheme } from "@mui/material/styles";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
@@ -34,8 +35,9 @@ import BrushOutlinedIcon from "@mui/icons-material/BrushOutlined";
 import PersonIcon from "@mui/icons-material/Person";
 import PaymentIcon from "@mui/icons-material/Payment";
 import QuestionAnswerOutlined from "@mui/icons-material/QuestionAnswerOutlined";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { supabase } from "../supabase/client";
 
 /* ---------- Paper premium ---------- */
@@ -138,6 +140,17 @@ const ProfileUpdate = () => {
   const theme = useTheme();
   const { user, setUser, updateUserData } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const searchParams = useMemo(
+    () => new URLSearchParams(location.search),
+    [location.search],
+  );
+  const isFirstLogin = Boolean(
+    location.state?.firstLogin ||
+      searchParams.get("firstLogin") === "true" ||
+      user?.isFirstLogin,
+  );
 
   const [phone, setPhone] = useState(user?.phone || "");
   const [name, setName] = useState(user?.name || "");
@@ -223,6 +236,20 @@ const ProfileUpdate = () => {
     };
   }, []);
 
+  /* ---------- Helpers de datos ---------- */
+  const getLocations = useCallback(async (province_id) => {
+    const { data, error } = await supabase
+      .from("localidades")
+      .select("*")
+      .eq("provincia_id", province_id)
+      .order("nombre", { ascending: true });
+    if (error) {
+      console.error("Error cargando localidades:", error);
+      return [];
+    }
+    return data;
+  }, []);
+
   /* ---------- Datos del usuario + métodos de pago ya guardados ---------- */
   useEffect(() => {
     if (!user?.id) return;
@@ -286,7 +313,7 @@ const ProfileUpdate = () => {
     return () => {
       cancelled = true;
     };
-  }, [user?.id]);
+  }, [user?.id, getLocations]);
 
   /* ---------- Avatar ---------- */
   const handleAvatarUploaded = (url) => {
@@ -319,6 +346,13 @@ const ProfileUpdate = () => {
     const hasMeetingPlaces = selectedMeetingPlaces.length > 0;
 
     if (!hasChanges && !hasPayments && !hasMeetingPlaces) {
+      try {
+        await supabase.auth.updateUser({
+          data: { profile_completed: true },
+        });
+      } catch (metaErr) {
+        console.warn("No se pudo actualizar metadata de usuario:", metaErr);
+      }
       navigate("/");
       return;
     }
@@ -327,11 +361,23 @@ const ProfileUpdate = () => {
     try {
       if (hasChanges) {
         const updatedUserData = await updateUserData(userData);
-        setUser((prevUser) => ({ ...prevUser, ...updatedUserData }));
+        setUser((prevUser) => ({
+          ...prevUser,
+          ...updatedUserData,
+          isFirstLogin: false,
+        }));
       }
       if (hasPayments) await saveSelectedPaymentMethods();
 
       if (hasMeetingPlaces) await saveSelectedMeetingPlaces();
+
+      try {
+        await supabase.auth.updateUser({
+          data: { profile_completed: true },
+        });
+      } catch (metaErr) {
+        console.warn("No se pudo actualizar metadata de usuario:", metaErr);
+      }
 
       navigate("/");
     } catch (error) {
@@ -340,20 +386,6 @@ const ProfileUpdate = () => {
     } finally {
       setSaving(false);
     }
-  };
-
-  /* ---------- Helpers de datos ---------- */
-  const getLocations = async (province_id) => {
-    const { data, error } = await supabase
-      .from("localidades")
-      .select("*")
-      .eq("provincia_id", province_id)
-      .order("nombre", { ascending: true });
-    if (error) {
-      console.error("Error cargando localidades:", error);
-      return [];
-    }
-    return data;
   };
 
   /* ---------- Handlers ---------- */
@@ -482,7 +514,7 @@ const ProfileUpdate = () => {
       <PremiumPaper elevation={0}>
         {/* Botón volver */}
         <Button
-          onClick={() => navigate(-1)}
+          onClick={() => (isFirstLogin ? navigate("/") : navigate(-1))}
           startIcon={<ArrowBackIcon fontSize="small" />}
           sx={{
             textTransform: "none",
@@ -524,13 +556,41 @@ const ProfileUpdate = () => {
                 mb: 0.25,
               }}
             >
-              Actualizar perfil
+              {isFirstLogin ? "Completá tus datos" : "Actualizar perfil"}
             </Typography>
             <Typography variant="body2" sx={{ color: "text.secondary" }}>
-              Modifica tu información personal y ubicación
+              {isFirstLogin
+                ? "Te damos la bienvenida. Completá tu información básica para comenzar."
+                : "Modifica tu información personal y ubicación"}
             </Typography>
           </Box>
         </Box>
+
+        {isFirstLogin && (
+          <Alert
+            severity="info"
+            icon={<InfoOutlinedIcon sx={{ fontSize: 24 }} />}
+            sx={{
+              mb: 3,
+              borderRadius: 3,
+              border: `1px solid ${alpha(theme.palette.info.main, 0.3)}`,
+              backgroundColor: alpha(theme.palette.info.main, 0.08),
+              "& .MuiAlert-message": {
+                width: "100%",
+              },
+            }}
+          >
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.25 }}>
+              Completá tus datos
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ color: "text.secondary", fontSize: "0.85rem" }}
+            >
+              Para brindarte la mejor experiencia y configurar tu cuenta, por favor completá tu información personal y de ubicación.
+            </Typography>
+          </Alert>
+        )}
 
         <Divider sx={{ my: 3 }} />
 
@@ -853,7 +913,7 @@ const ProfileUpdate = () => {
           justifyContent="flex-end"
         >
           <Button
-            onClick={() => navigate(-1)}
+            onClick={() => (isFirstLogin ? navigate("/") : navigate(-1))}
             sx={{
               textTransform: "none",
               fontWeight: 500,

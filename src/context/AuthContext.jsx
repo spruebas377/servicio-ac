@@ -5,6 +5,7 @@ import {
   useEffect,
   useCallback,
 } from "react";
+import { useNavigate } from "react-router";
 import { supabase } from "../supabase/client";
 
 export const AuthContext = createContext();
@@ -18,6 +19,7 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -63,9 +65,18 @@ export const AuthProvider = ({ children }) => {
             console.warn("Error insertando user_data inicial:", error);
             return null;
           }
-          return data;
+          return { ...data, isFirstLogin: true };
         } else {
-          return userDataVerified;
+          const isCompleted =
+            Boolean(userDataParam.user_metadata?.profile_completed) ||
+            Boolean(
+              userDataVerified.phone ||
+              userDataVerified.city ||
+              userDataVerified.province ||
+              userDataVerified.gender ||
+              userDataVerified.nationality
+            );
+          return { ...userDataVerified, isFirstLogin: !isCompleted };
         }
       } catch (err) {
         console.error("Error en createUserData:", err);
@@ -98,6 +109,26 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     let isMounted = true;
 
+    const handleOAuthRedirectCheck = (uData) => {
+      const isOAuthLogin =
+        sessionStorage.getItem("oauth_login_in_progress") === "true";
+      const hasOAuthHash =
+        window.location.hash.includes("access_token") ||
+        window.location.search.includes("code=");
+
+      if (isOAuthLogin || hasOAuthHash) {
+        sessionStorage.removeItem("oauth_login_in_progress");
+        if (uData?.isFirstLogin) {
+          navigate("/profile-update", {
+            state: { firstLogin: true },
+            replace: true,
+          });
+        } else if (window.location.pathname === "/login") {
+          navigate("/", { replace: true });
+        }
+      }
+    };
+
     const initializeAuth = async () => {
       try {
         setLoading(true);
@@ -113,7 +144,10 @@ export const AuthProvider = ({ children }) => {
 
           if (currentUser) {
             const uData = await createUserData(currentUser);
-            if (isMounted) setUserData(uData);
+            if (isMounted) {
+              setUserData(uData);
+              handleOAuthRedirectCheck(uData);
+            }
           } else {
             if (isMounted) setUserData(null);
           }
@@ -142,7 +176,12 @@ export const AuthProvider = ({ children }) => {
 
       if (currentUser) {
         const uData = await createUserData(currentUser);
-        if (isMounted) setUserData(uData);
+        if (isMounted) {
+          setUserData(uData);
+          if (event === "SIGNED_IN") {
+            handleOAuthRedirectCheck(uData);
+          }
+        }
       } else {
         if (isMounted) setUserData(null);
       }
@@ -152,7 +191,7 @@ export const AuthProvider = ({ children }) => {
       isMounted = false;
       subscription?.unsubscribe();
     };
-  }, [createUserData, getPublicUsersIdsList]);
+  }, [createUserData, getPublicUsersIdsList, navigate]);
 
   const updateUserData = async (userData) => {
     if (!userData || !userData.id) return null;

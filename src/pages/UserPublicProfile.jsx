@@ -441,22 +441,36 @@ export default function UserPublicProfile() {
                 sx={{ mt: 1 }}
               >
                 {/* Email */}
-                <Stack direction="row" spacing={0.5} alignItems="center">
+                {/* <Stack direction="row" spacing={0.5} alignItems="center">
                   <EmailOutlinedIcon
                     sx={{ fontSize: 16, color: "text.secondary" }}
                   />
                   <Typography variant="body2" color="text.secondary">
                     {userData.email}
                   </Typography>
-                </Stack>
+                </Stack> */}
                 {/* Phone */}
                 <Stack direction="row" spacing={0.5} alignItems="center">
                   <PhoneOutlinedIcon
                     sx={{ fontSize: 16, color: "text.secondary" }}
                   />
-                  <Typography variant="body2" color="text.secondary">
-                    {userData.phone}
-                  </Typography>
+                  {userData.phone ? (
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontSize: "0.85rem" }}
+                    >
+                      {userData.phone}
+                    </Typography>
+                  ) : (
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontStyle: "italic" }}
+                    >
+                      Teléfono no disponible
+                    </Typography>
+                  )}
                 </Stack>
                 {/* Location */}
                 <Stack direction="row" spacing={0.5} alignItems="center">

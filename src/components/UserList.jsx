@@ -251,7 +251,7 @@ const UserCardItem = ({ user, onPreviewImage, onCopyUrl }) => {
             noWrap
             sx={{ maxWidth: 220 }}
           >
-            {user.email}
+            {user.phone ? user.phone : "---"}
           </Typography>
         }
       />

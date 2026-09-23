@@ -131,16 +131,20 @@ const Register = () => {
 
   useEffect(() => {
     if (user) {
-      navigate("/");
+      navigate("/profile-update", { state: { firstLogin: true } });
     }
-  }, [user]);
+  }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     try {
-      await signup(email, password);
-      navigate("/");
+      const uData = await signup(email, password);
+      if (uData) {
+        navigate("/profile-update", { state: { firstLogin: true } });
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       console.log(err);
       setError(err?.message || "No se pudo crear la cuenta.");
