@@ -37,6 +37,7 @@ import PaymentIcon from "@mui/icons-material/Payment";
 import QuestionAnswerOutlined from "@mui/icons-material/QuestionAnswerOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useAuth } from "../context/AuthContext";
+import { useGenders } from "../context/GendersContext";
 import { useNavigate, useLocation } from "react-router";
 import { supabase } from "../supabase/client";
 
@@ -139,6 +140,11 @@ const selectMenuProps = (theme) => ({
 const ProfileUpdate = () => {
   const theme = useTheme();
   const { user, setUser, updateUserData } = useAuth();
+  const {
+    genders,
+    loading: loadingGenders,
+    refresh: refreshGenders,
+  } = useGenders();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -163,7 +169,6 @@ const ProfileUpdate = () => {
   const [selectedGender, setSelectedGender] = useState(user?.gender || "");
   const [aboutMe, setAboutMe] = useState(user?.about_me || "");
 
-  const [genders, setGenders] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState([]);
   const [provinces, setProvinces] = useState([]);
@@ -196,13 +201,10 @@ const ProfileUpdate = () => {
     const loadAll = async () => {
       setLoadingInitial(true);
       try {
-        const [gendersRes, paymentsRes, provincesRes, placesRes, servicesRes] =
+        /* Géneros se cargan desde el GendersContext (caché + refresco),
+           así que NO los pedimos acá. Solo el resto de catálogos. */
+        const [paymentsRes, provincesRes, placesRes, servicesRes] =
           await Promise.all([
-            supabase
-              .from("gender")
-              .select("*")
-              .order("id", { ascending: true }),
-
             supabase
               .from("payment_methods")
               .select("*")
@@ -226,7 +228,6 @@ const ProfileUpdate = () => {
 
         if (cancelled) return;
 
-        setGenders(gendersRes.data || []);
         setPaymentMethods(paymentsRes.data || []);
         setProvinces(provincesRes.data || []);
         setMeetingPlaces(placesRes.data || []);
@@ -358,6 +359,7 @@ const ProfileUpdate = () => {
     };
 
     const hasChanges = Object.keys(userData).length > 1;
+    const hasGenderChange = selectedGender && selectedGender !== user.gender;
     const hasPayments = selectedPaymentMethods.length > 0;
     const hasMeetingPlaces = selectedMeetingPlaces.length > 0;
     const hasServices = selectedServices.length > 0;
@@ -385,10 +387,17 @@ const ProfileUpdate = () => {
         }));
       }
       if (hasPayments) await saveSelectedPaymentMethods();
-
       if (hasMeetingPlaces) await saveSelectedMeetingPlaces();
-
       if (hasServices) await saveSelectedServices();
+
+      /* Refrescar los contadores de géneros si cambió el género del usuario */
+      if (hasGenderChange) {
+        try {
+          await refreshGenders();
+        } catch (genderErr) {
+          console.warn("No se pudo refrescar géneros:", genderErr);
+        }
+      }
 
       try {
         await supabase.auth.updateUser({
@@ -527,33 +536,71 @@ const ProfileUpdate = () => {
 
   /* ---------- Guardar servicios ---------- */
   const saveSelectedServices = async () => {
+    // 1. Resolver el user_data.id de forma robusta
+    let userDataId = null;
+
+    // Intento 1: si user.id ya es el id de user_data (caso A)
+    const { data: byId, error: byIdError } = await supabase
+      .from("user_data")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (!byIdError && byId?.id) {
+      userDataId = byId.id;
+    } else {
+      // Intento 2: buscar por auth_id (caso B)
+      const { data: byAuth, error: byAuthError } = await supabase
+        .from("user_data")
+        .select("id")
+        .eq("auth_id", user.id)
+        .maybeSingle();
+
+      if (byAuthError) throw byAuthError;
+      if (byAuth?.id) userDataId = byAuth.id;
+    }
+
+    if (!userDataId) {
+      console.error("❌ No se encontró user_data para user.id:", user.id);
+      throw new Error(
+        "No se pudo identificar tu perfil. Cerrá sesión y volvé a entrar.",
+      );
+    }
+
+    console.log("✅ userDataId resuelto:", userDataId);
+
+    // 2. Traer los servicios actuales
     const { data: existing, error: fetchError } = await supabase
       .from("user_services")
       .select("service_id")
-      .eq("user_id", user.id);
+      .eq("user_id", userDataId);
 
     if (fetchError) throw fetchError;
 
-    const existingIds = existing.map((r) => r.service_id);
+    const existingIds = (existing || []).map((r) => r.service_id);
 
     const toAdd = selectedServices.filter((id) => !existingIds.includes(id));
     const toRemove = existingIds.filter((id) => !selectedServices.includes(id));
 
+    console.log("📝 toAdd:", toAdd, "toRemove:", toRemove);
+
+    // 3. Insertar nuevos
     if (toAdd.length) {
       const { error } = await supabase.from("user_services").insert(
         toAdd.map((service_id) => ({
-          user_id: user.id,
+          user_id: userDataId,
           service_id,
         })),
       );
       if (error) throw error;
     }
 
+    // 4. Eliminar los removidos
     if (toRemove.length) {
       const { error } = await supabase
         .from("user_services")
         .delete()
-        .eq("user_id", user.id)
+        .eq("user_id", userDataId)
         .in("service_id", toRemove);
       if (error) throw error;
     }
@@ -781,7 +828,11 @@ const ProfileUpdate = () => {
           Cómo te definís
         </SectionLabel>
         <Box sx={{ mb: 3.5 }}>
-          <FormControl fullWidth sx={fieldSx(theme)}>
+          <FormControl
+            fullWidth
+            sx={fieldSx(theme)}
+            disabled={loadingGenders && !genders.length}
+          >
             <InputLabel id="gender-label">Género</InputLabel>
             <Select
               value={selectedGender}
@@ -789,15 +840,42 @@ const ProfileUpdate = () => {
               labelId="gender-label"
               label="Género"
               MenuProps={selectMenuProps(theme)}
+              renderValue={(selected) => {
+                if (!selected) {
+                  return (
+                    <span style={{ color: theme.palette.text.disabled }}>
+                      Seleccione un género
+                    </span>
+                  );
+                }
+                const g = genders.find((x) => x.id === selected);
+                return g ? g.name : selected;
+              }}
             >
               <MenuItem value="">
                 <em>Seleccione un género</em>
               </MenuItem>
-              {genders.map((g) => (
-                <MenuItem key={g.id} value={g.id}>
-                  {g.name || g.nombre}
+              {loadingGenders && !genders.length ? (
+                <MenuItem disabled>
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    alignItems="center"
+                    sx={{ py: 0.5 }}
+                  >
+                    <CircularProgress size={14} />
+                    <Typography variant="body2" sx={{ color: "text.disabled" }}>
+                      Cargando géneros…
+                    </Typography>
+                  </Stack>
                 </MenuItem>
-              ))}
+              ) : (
+                genders.map((g) => (
+                  <MenuItem key={g.id} value={g.id}>
+                    {g.name}
+                  </MenuItem>
+                ))
+              )}
             </Select>
           </FormControl>
         </Box>

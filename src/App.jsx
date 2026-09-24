@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router";
 import { AuthProvider } from "./context/AuthContext";
-import { TaskContextProvider } from "./context/TaskContext";
+import { GendersProvider } from "./context/GendersContext";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import Register from "./pages/Register";
@@ -19,6 +19,8 @@ import UserPublicProfile from "./pages/UserPublicProfile";
 import Conversations from "./pages/Conversations";
 import ChatPage from "./pages/ChatPage";
 import ChatNewPage from "./pages/ChatNewPage";
+import NavBar from "./components/NavBar";
+import SearchResults from "./pages/SearchResults";
 
 function App() {
   // Persistimos el modo en localStorage
@@ -45,9 +47,9 @@ function App() {
     <ThemeProvider theme={theme}>
       <ColorModeContext.Provider value={colorMode}>
         <CssBaseline />
-        <BrowserRouter>
-          <AuthProvider>
-            <TaskContextProvider>
+        <GendersProvider>
+          <BrowserRouter>
+            <AuthProvider>
               <Box
                 sx={{
                   display: "flex",
@@ -55,7 +57,7 @@ function App() {
                   minHeight: "100vh",
                 }}
               >
-                <NavBarWithMessages />
+                <NavBar />
                 <Box component="main" sx={{ flex: 1 }}>
                   <Routes>
                     <Route path="/" element={<Home />} />
@@ -79,15 +81,16 @@ function App() {
                       path="/my-publications"
                       element={<MyPublications />}
                     />
+                    <Route path="/search" element={<SearchResults />} />
                     <Route path="/logout" element={<LogOut />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Box>
                 <Footer />
               </Box>
-            </TaskContextProvider>
-          </AuthProvider>
-        </BrowserRouter>
+            </AuthProvider>
+          </BrowserRouter>
+        </GendersProvider>
       </ColorModeContext.Provider>
     </ThemeProvider>
   );

@@ -20,7 +20,6 @@ import {
 import { styled, useTheme } from "@mui/material/styles";
 import MenuIcon from "@mui/icons-material/Menu";
 import Diversity1Icon from "@mui/icons-material/Diversity1";
-import AddIcon from "@mui/icons-material/Add";
 import TaskIcon from "@mui/icons-material/Task";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -29,18 +28,26 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import Diversity3OutlinedIcon from "@mui/icons-material/Diversity3Outlined";
 import { NavLink } from "react-router";
 import { useColorMode } from "../context/ColorModeContext";
 import { supabase } from "../supabase/client";
-import { nombrePagina, Logo } from "./datos/pagina";
 import { useAuth } from "../context/AuthContext";
 import MessagesMenu from "./MessagesMenu";
+import { GenderSubmenuDesktop, GenderSubmenuMobile } from "./GenderSubmenu";
+import { nombrePagina, Logo } from "./datos/pagina";
+
+/* ------------------------------------------------------------------ */
+/*  Configuración                                                      */
+/* ------------------------------------------------------------------ */
 
 const pages = [
   {
-    icon: <TaskIcon fontSize="small" />,
-    label: "Qué buscás?",
+    icon: <Diversity3OutlinedIcon fontSize="small" />,
+    label: "Géneros",
     link: "/new-task",
+    isGenderMenu: true,
   },
   {
     icon: <TaskIcon fontSize="small" />,
@@ -92,7 +99,10 @@ const settingsNoLogged = [
   },
 ];
 
-/* ---------- AppBar con glass effect adaptativo ---------- */
+/* ------------------------------------------------------------------ */
+/*  Estilos                                                            */
+/* ------------------------------------------------------------------ */
+
 const PremiumAppBar = styled(AppBar)(({ theme }) => ({
   background:
     theme.palette.mode === "light"
@@ -105,7 +115,6 @@ const PremiumAppBar = styled(AppBar)(({ theme }) => ({
   borderBottom: `1px solid ${theme.palette.divider}`,
 }));
 
-/* ---------- NavLink estilizado con estado activo ---------- */
 const NavItem = styled(NavLink)(({ theme }) => ({
   textDecoration: "none",
   color: "inherit",
@@ -118,6 +127,10 @@ const NavItem = styled(NavLink)(({ theme }) => ({
   alignItems: "center",
   gap: theme.spacing(0.75),
   transition: "all 0.2s ease",
+  background: "transparent",
+  border: "none",
+  cursor: "pointer",
+  fontFamily: "inherit",
   "&:hover": {
     backgroundColor: alpha(theme.palette.text.primary, 0.06),
   },
@@ -127,7 +140,6 @@ const NavItem = styled(NavLink)(({ theme }) => ({
   },
 }));
 
-/* ---------- MenuItem estilizado ---------- */
 const StyledMenuItem = styled(MenuItem, {
   shouldForwardProp: (prop) => prop !== "danger",
 })(({ theme, danger }) => ({
@@ -147,7 +159,6 @@ const StyledMenuItem = styled(MenuItem, {
   }),
 }));
 
-/* ---------- Paper premium reutilizable ---------- */
 const menuPaperSx = (theme) => ({
   mt: 1.5,
   minWidth: 240,
@@ -161,22 +172,28 @@ const menuPaperSx = (theme) => ({
   backgroundImage: "none",
 });
 
-/* ---------- Logo ---------- */
+/* ------------------------------------------------------------------ */
+/*  Componente principal                                               */
+/* ------------------------------------------------------------------ */
 
-/* ---------- Componente principal ---------- */
 export default function NavBar() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const theme = useTheme();
   const { mode, toggleColorMode } = useColorMode();
+
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);
+  const [anchorElGender, setAnchorElGender] = useState(null);
   const [avatar, setAvatar] = useState("");
 
   const handleOpenNavMenu = (e) => setAnchorElNav(e.currentTarget);
   const handleCloseNavMenu = () => setAnchorElNav(null);
   const handleOpenUserMenu = (e) => setAnchorElUser(e.currentTarget);
   const handleCloseUserMenu = () => setAnchorElUser(null);
+  const handleOpenGenderMenu = (e) => setAnchorElGender(e.currentTarget);
+  const handleCloseGenderMenu = () => setAnchorElGender(null);
 
+  /* Cargar avatar del usuario */
   useEffect(() => {
     let isMounted = true;
     const assignAvatar = async () => {
@@ -216,7 +233,7 @@ export default function NavBar() {
         <Toolbar disableGutters sx={{ minHeight: { xs: 64, md: 72 }, gap: 1 }}>
           <Logo />
 
-          {/* Menú móvil */}
+          {/* ---------- Menú móvil ---------- */}
           <Box
             sx={{
               flexGrow: 1,
@@ -236,6 +253,7 @@ export default function NavBar() {
             >
               <MenuIcon />
             </IconButton>
+
             <Menu
               anchorEl={anchorElNav}
               anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
@@ -246,29 +264,38 @@ export default function NavBar() {
               sx={{ display: { xs: "block", md: "none" } }}
               slotProps={{ paper: { sx: menuPaperSx(theme) } }}
             >
-              {pages.map((page) => (
-                <StyledMenuItem
-                  key={page.label}
-                  component={NavLink}
-                  to={page.link}
-                  onClick={handleCloseNavMenu}
-                >
-                  <ListItemIcon sx={{ minWidth: 28, color: "text.secondary" }}>
-                    {page.icon}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={page.label}
-                    primarytypographyprops={{
-                      fontSize: "0.9rem",
-                      fontWeight: 500,
-                    }}
+              {pages.map((page) =>
+                page.isGenderMenu ? (
+                  <GenderSubmenuMobile
+                    key={page.label}
+                    onSelect={handleCloseNavMenu}
                   />
-                </StyledMenuItem>
-              ))}
+                ) : (
+                  <StyledMenuItem
+                    key={page.label}
+                    component={NavLink}
+                    to={page.link}
+                    onClick={handleCloseNavMenu}
+                  >
+                    <ListItemIcon
+                      sx={{ minWidth: 28, color: "text.secondary" }}
+                    >
+                      {page.icon}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={page.label}
+                      primaryTypographyProps={{
+                        fontSize: "0.9rem",
+                        fontWeight: 500,
+                      }}
+                    />
+                  </StyledMenuItem>
+                ),
+              )}
             </Menu>
           </Box>
 
-          {/* Navegación desktop */}
+          {/* ---------- Navegación desktop ---------- */}
           <Box
             sx={{
               flexGrow: 1,
@@ -277,15 +304,46 @@ export default function NavBar() {
               gap: 0.5,
             }}
           >
-            {pages.map((page) => (
-              <NavItem key={page.label} to={page.link}>
-                {page.icon}
-                {page.label}
-              </NavItem>
-            ))}
+            {pages.map((page) =>
+              page.isGenderMenu ? (
+                <React.Fragment key={page.label}>
+                  <NavItem
+                    component="button"
+                    type="button"
+                    onClick={handleOpenGenderMenu}
+                    aria-haspopup="true"
+                    aria-expanded={Boolean(anchorElGender)}
+                  >
+                    {page.icon}
+                    {page.label}
+                    <ExpandMoreIcon
+                      fontSize="small"
+                      sx={{
+                        ml: 0.5,
+                        transition: "transform 0.2s ease",
+                        transform: anchorElGender
+                          ? "rotate(180deg)"
+                          : "rotate(0deg)",
+                      }}
+                    />
+                  </NavItem>
+
+                  <GenderSubmenuDesktop
+                    anchorEl={anchorElGender}
+                    open={Boolean(anchorElGender)}
+                    onClose={handleCloseGenderMenu}
+                  />
+                </React.Fragment>
+              ) : (
+                <NavItem key={page.label} to={page.link}>
+                  {page.icon}
+                  {page.label}
+                </NavItem>
+              ),
+            )}
           </Box>
 
-          {/* Toggle modo + Avatar */}
+          {/* ---------- Toggle modo + Mensajes + Avatar ---------- */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
             {user && <MessagesMenu />}
 
@@ -326,8 +384,8 @@ export default function NavBar() {
                 }}
               >
                 <Avatar
-                  alt="Lara Montes"
-                  src="/static/images/avatar/2.jpg"
+                  alt={user?.email || "Usuario"}
+                  src={avatar || undefined}
                   sx={{
                     width: 38,
                     height: 38,
@@ -339,19 +397,7 @@ export default function NavBar() {
                     boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
                   }}
                 >
-                  {avatar ? (
-                    <img
-                      src={avatar}
-                      alt="Avatar"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
-                  ) : (
-                    "?"
-                  )}
+                  {!avatar && (user?.email?.[0]?.toUpperCase() || "?")}
                 </Avatar>
               </IconButton>
             </Tooltip>
@@ -372,64 +418,38 @@ export default function NavBar() {
                 <Typography
                   sx={{ fontSize: "0.78rem", color: "text.secondary" }}
                 >
-                  {user ? user.email : "Inicia sesión para continuar"}
+                  {user ? "Gestiona tu cuenta" : "Inicia sesión para continuar"}
                 </Typography>
               </Box>
+
               <Divider sx={{ my: 0.5 }} />
 
-              {user
-                ? settings.map((setting, idx) =>
-                    setting.divider ? (
-                      <Divider key={`div-${idx}`} sx={{ my: 0.5 }} />
-                    ) : (
-                      <StyledMenuItem
-                        key={setting.label}
-                        component={NavLink}
-                        to={setting.link}
-                        onClick={handleCloseUserMenu}
-                        danger={setting.danger}
-                      >
-                        <ListItemIcon
-                          sx={{ minWidth: 28, color: "text.secondary" }}
-                        >
-                          {setting.icon}
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={setting.label}
-                          primarytypographyprops={{
-                            fontSize: "0.88rem",
-                            fontWeight: 500,
-                          }}
-                        />
-                      </StyledMenuItem>
-                    ),
-                  )
-                : settingsNoLogged.map((setting, idx) =>
-                    setting.divider ? (
-                      <Divider key={`div-${idx}`} sx={{ my: 0.5 }} />
-                    ) : (
-                      <StyledMenuItem
-                        key={setting.label}
-                        component={NavLink}
-                        to={setting.link}
-                        onClick={handleCloseUserMenu}
-                        danger={setting.danger}
-                      >
-                        <ListItemIcon
-                          sx={{ minWidth: 28, color: "text.secondary" }}
-                        >
-                          {setting.icon}
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={setting.label}
-                          primarytypographyprops={{
-                            fontSize: "0.88rem",
-                            fontWeight: 500,
-                          }}
-                        />
-                      </StyledMenuItem>
-                    ),
-                  )}
+              {(user ? settings : settingsNoLogged).map((setting, idx) =>
+                setting.divider ? (
+                  <Divider key={`div-${idx}`} sx={{ my: 0.5 }} />
+                ) : (
+                  <StyledMenuItem
+                    key={setting.label}
+                    component={NavLink}
+                    to={setting.link}
+                    onClick={handleCloseUserMenu}
+                    danger={setting.danger}
+                  >
+                    <ListItemIcon
+                      sx={{ minWidth: 28, color: "text.secondary" }}
+                    >
+                      {setting.icon}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={setting.label}
+                      primaryTypographyProps={{
+                        fontSize: "0.88rem",
+                        fontWeight: 500,
+                      }}
+                    />
+                  </StyledMenuItem>
+                ),
+              )}
             </Menu>
           </Box>
         </Toolbar>

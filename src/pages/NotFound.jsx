@@ -4,7 +4,6 @@ import { styled, alpha, useTheme } from "@mui/material/styles";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SearchOffOutlinedIcon from "@mui/icons-material/SearchOffOutlined";
-import Diversity1Icon from "@mui/icons-material/Diversity1";
 import { NavLink, useNavigate } from "react-router";
 import { nombrePagina } from "../components/datos/pagina";
 
@@ -173,8 +172,8 @@ export default function NotFound() {
             mb: 3.5,
           }}
         >
-          Lo sentimos, la página que buscás no existe o fue movida. Verifica la
-          URL o vuelve al inicio.
+          Lo sentimos, la página que buscás no existe o fue movida. Verificá la
+          URL o volvé al inicio.
         </Typography>
 
         <Divider sx={{ mb: 3.5 }} />
