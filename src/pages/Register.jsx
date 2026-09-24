@@ -88,7 +88,6 @@ const PrimaryButton = styled(Button)(({ theme }) => ({
   },
 }));
 
-/* ---------- Estilo compartido para inputs ---------- */
 const fieldSx = (theme) => ({
   "& .MuiOutlinedInput-root": {
     borderRadius: 2.5,
@@ -129,9 +128,14 @@ const Register = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  /* Si ya hay sesión activa (por ejemplo, confirmación desactivada),
+     redirigir directo */
   useEffect(() => {
     if (user) {
-      navigate("/profile-update", { state: { firstLogin: true } });
+      navigate("/profile-update", {
+        state: { firstLogin: true },
+        replace: true,
+      });
     }
   }, [user, navigate]);
 
@@ -139,14 +143,26 @@ const Register = () => {
     e.preventDefault();
     setError("");
     try {
-      const uData = await signup(email, password);
-      if (uData) {
-        navigate("/profile-update", { state: { firstLogin: true } });
-      } else {
-        navigate("/");
+      const result = await signup(email, password);
+
+      /* Caso 1: Supabase requiere confirmación por email
+         → no hay sesión todavía, redirigimos a /confirm-email */
+      if (!result?.session) {
+        navigate("/confirm-email", {
+          state: { email },
+          replace: true,
+        });
+        return;
       }
+
+      /* Caso 2: la confirmación por email está desactivada
+         → ya hay sesión, vamos directo al perfil */
+      navigate("/profile-update", {
+        state: { firstLogin: true },
+        replace: true,
+      });
     } catch (err) {
-      console.log(err);
+      console.error(err);
       setError(err?.message || "No se pudo crear la cuenta.");
     }
   };
@@ -162,7 +178,6 @@ const Register = () => {
       }}
     >
       <PremiumPaper elevation={0}>
-        {/* Logo + títulos */}
         <Box
           sx={{
             display: "flex",
@@ -192,7 +207,6 @@ const Register = () => {
           </Typography>
         </Box>
 
-        {/* Error */}
         {error && (
           <Alert
             severity="error"
@@ -211,7 +225,6 @@ const Register = () => {
           </Alert>
         )}
 
-        {/* Formulario */}
         <Box
           component="form"
           onSubmit={handleSubmit}
@@ -301,10 +314,8 @@ const Register = () => {
           </PrimaryButton>
         </Box>
 
-        {/* Divisor */}
         <Divider sx={{ my: 3 }} />
 
-        {/* Link a login */}
         <Stack
           direction="row"
           spacing={0.5}

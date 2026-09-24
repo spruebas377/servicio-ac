@@ -4,6 +4,7 @@ import { GendersProvider } from "./context/GendersContext";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import Register from "./pages/Register";
+import ConfirmEmail from "./pages/ConfirmEmail";
 import Login from "./pages/Login_Google";
 import ProfileUpdate from "./pages/ProfileUpdate";
 import LogOut from "./pages/LogOut";
@@ -64,6 +65,7 @@ function App() {
                     <Route path="/home" element={<Home />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/signup" element={<Register />} />
+                    <Route path="/confirm-email" element={<ConfirmEmail />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/profile" element={<ProfilePage />} />
                     <Route path="/profile-update" element={<ProfileUpdate />} />

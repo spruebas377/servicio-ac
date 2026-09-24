@@ -20,7 +20,7 @@ import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import LoginOutlinedIcon from "@mui/icons-material/LoginOutlined";
 import Diversity1Icon from "@mui/icons-material/Diversity1";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useLocation } from "react-router";
 import { useAuth } from "../context/AuthContext";
 
 const PremiumPaper = styled(Paper)(({ theme }) => ({
@@ -101,17 +101,35 @@ const Login = () => {
   const theme = useTheme();
   const { user, userData, login, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
 
+  /* Mensaje informativo si venimos de /confirm-email o /register */
+  useEffect(() => {
+    const state = location.state || {};
+    const query = new URLSearchParams(location.search);
+
+    if (state.fromConfirm || query.get("confirmed") === "true") {
+      setInfo("¡Correo confirmado! Ya podés iniciar sesión.");
+    } else if (state.fromRegister) {
+      setInfo("Te enviamos un correo. Confirmalo antes de iniciar sesión.");
+    }
+  }, [location.state, location.search]);
+
+  /* Si ya hay sesión, redirigir */
   useEffect(() => {
     if (user && userData !== null) {
       if (userData?.isFirstLogin) {
-        navigate("/profile-update", { state: { firstLogin: true } });
+        navigate("/profile-update", {
+          state: { firstLogin: true },
+          replace: true,
+        });
       } else {
-        navigate("/");
+        navigate("/", { replace: true });
       }
     }
   }, [user, userData, navigate]);
@@ -119,15 +137,33 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setInfo("");
     try {
       const uData = await login(email, password);
       if (uData?.isFirstLogin) {
-        navigate("/profile-update", { state: { firstLogin: true } });
+        navigate("/profile-update", {
+          state: { firstLogin: true },
+          replace: true,
+        });
       } else {
-        navigate("/");
+        navigate("/", { replace: true });
       }
     } catch (err) {
       console.error(err);
+
+      /* Detectar email no confirmado */
+      const msg = err?.message?.toLowerCase() || "";
+      if (
+        msg.includes("email not confirmed") ||
+        msg.includes("not confirmed")
+      ) {
+        navigate("/confirm-email", {
+          state: { email },
+          replace: true,
+        });
+        return;
+      }
+
       setError("Datos incorrectos. Si no tienes cuenta, regístrate.");
     }
   };
@@ -170,6 +206,23 @@ const Login = () => {
             Ingresa para continuar
           </Typography>
         </Box>
+
+        {info && (
+          <Alert
+            severity="info"
+            onClose={() => setInfo("")}
+            sx={{
+              mb: 2.5,
+              borderRadius: 2.5,
+              fontSize: "0.85rem",
+              border: `1px solid ${alpha(theme.palette.info.main, 0.3)}`,
+              backgroundColor: alpha(theme.palette.info.main, 0.08),
+              "& .MuiAlert-icon": { color: "inherit" },
+            }}
+          >
+            {info}
+          </Alert>
+        )}
 
         {error && (
           <Alert

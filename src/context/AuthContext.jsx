@@ -1,9 +1,11 @@
+// src/context/AuthContext.jsx
 import {
   createContext,
   useContext,
   useState,
   useEffect,
   useCallback,
+  useRef,
 } from "react";
 import { useNavigate } from "react-router";
 import { supabase } from "../supabase/client";
@@ -24,6 +26,11 @@ export const AuthProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [usersList, setUsersList] = useState([]);
+  const isMountedRef = useRef(true);
+
+  /* ------------------------------------------------------------------ */
+  /*  Helpers internos                                                   */
+  /* ------------------------------------------------------------------ */
 
   const verifyUserData = useCallback(async (userId) => {
     if (!userId) return null;
@@ -49,6 +56,7 @@ export const AuthProvider = ({ children }) => {
       if (!userDataParam || !userDataParam.id) return null;
       try {
         const userDataVerified = await verifyUserData(userDataParam.id);
+
         if (!userDataVerified) {
           const { data, error } = await supabase
             .from("user_data")
@@ -61,23 +69,25 @@ export const AuthProvider = ({ children }) => {
             })
             .select("*")
             .single();
+
           if (error) {
             console.warn("Error insertando user_data inicial:", error);
             return null;
           }
           return { ...data, isFirstLogin: true };
-        } else {
-          const isCompleted =
-            Boolean(userDataParam.user_metadata?.profile_completed) ||
-            Boolean(
-              userDataVerified.phone ||
-              userDataVerified.city ||
-              userDataVerified.province ||
-              userDataVerified.gender ||
-              userDataVerified.nationality
-            );
-          return { ...userDataVerified, isFirstLogin: !isCompleted };
         }
+
+        const isCompleted =
+          Boolean(userDataParam.user_metadata?.profile_completed) ||
+          Boolean(
+            userDataVerified.phone ||
+            userDataVerified.city ||
+            userDataVerified.province ||
+            userDataVerified.gender ||
+            userDataVerified.nationality,
+          );
+
+        return { ...userDataVerified, isFirstLogin: !isCompleted };
       } catch (err) {
         console.error("Error en createUserData:", err);
         return null;
@@ -106,8 +116,12 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  /* ------------------------------------------------------------------ */
+  /*  Inicialización + listener de auth                                  */
+  /* ------------------------------------------------------------------ */
+
   useEffect(() => {
-    let isMounted = true;
+    isMountedRef.current = true;
 
     const handleOAuthRedirectCheck = (uData) => {
       const isOAuthLogin =
@@ -133,99 +147,145 @@ export const AuthProvider = ({ children }) => {
       try {
         setLoading(true);
         const { data, error } = await supabase.auth.getUser();
+
         if (error) {
-          if (isMounted) {
+          if (isMountedRef.current) {
             setUser(null);
             setUserData(null);
           }
         } else {
           const currentUser = data?.user || null;
-          if (isMounted) setUser(currentUser);
+          if (isMountedRef.current) setUser(currentUser);
 
           if (currentUser) {
-            const uData = await createUserData(currentUser);
-            if (isMounted) {
-              setUserData(uData);
-              handleOAuthRedirectCheck(uData);
+            /* Si el usuario tiene sesión pero su email no está confirmado,
+               Supabase igual devuelve user pero con email_confirmed_at = null.
+               En ese caso, NO creamos user_data todavía. */
+            const emailConfirmed = Boolean(currentUser.email_confirmed_at);
+
+            if (emailConfirmed) {
+              const uData = await createUserData(currentUser);
+              if (isMountedRef.current) {
+                setUserData(uData);
+                handleOAuthRedirectCheck(uData);
+              }
+            } else {
+              if (isMountedRef.current) setUserData(null);
             }
           } else {
-            if (isMounted) setUserData(null);
+            if (isMountedRef.current) setUserData(null);
           }
         }
 
         const publicUsers = await getPublicUsersIdsList();
-        if (isMounted) setUsersList(publicUsers || []);
+        if (isMountedRef.current) setUsersList(publicUsers || []);
       } catch (err) {
         console.error(
           "Error inicializando autenticación en AuthProvider:",
           err,
         );
       } finally {
-        if (isMounted) setLoading(false);
+        if (isMountedRef.current) setLoading(false);
       }
     };
 
     initializeAuth();
 
-    // Escuchar cambios de autenticación
+    /* Listener de cambios de auth */
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       const currentUser = session?.user || null;
-      if (isMounted) setUser(currentUser);
+      if (isMountedRef.current) setUser(currentUser);
 
       if (currentUser) {
-        const uData = await createUserData(currentUser);
-        if (isMounted) {
-          setUserData(uData);
-          if (event === "SIGNED_IN") {
-            handleOAuthRedirectCheck(uData);
+        const emailConfirmed = Boolean(currentUser.email_confirmed_at);
+
+        if (emailConfirmed) {
+          const uData = await createUserData(currentUser);
+          if (isMountedRef.current) {
+            setUserData(uData);
+            if (event === "SIGNED_IN") {
+              handleOAuthRedirectCheck(uData);
+            }
           }
+        } else {
+          if (isMountedRef.current) setUserData(null);
         }
       } else {
-        if (isMounted) setUserData(null);
+        if (isMountedRef.current) setUserData(null);
       }
     });
 
     return () => {
-      isMounted = false;
+      isMountedRef.current = false;
       subscription?.unsubscribe();
     };
   }, [createUserData, getPublicUsersIdsList, navigate]);
 
-  const updateUserData = async (userData) => {
-    if (!userData || !userData.id) return null;
+  /* ------------------------------------------------------------------ */
+  /*  Acciones                                                           */
+  /* ------------------------------------------------------------------ */
+
+  const updateUserData = async (userDataToUpdate) => {
+    if (!userDataToUpdate || !userDataToUpdate.id) return null;
     const { data, error } = await supabase
       .from("user_data")
-      .update(userData)
-      .eq("id", userData.id)
+      .update(userDataToUpdate)
+      .eq("id", userDataToUpdate.id)
       .select("*");
     if (error) throw error;
-    console.log("Usuario actualizado:", data);
     return data;
   };
 
+  /**
+   * Registro de usuario.
+   *
+   * Caso A: Confirmación por email ACTIVADA en Supabase
+   *   → data.session es null
+   *   → NO creamos user_data acá (se creará cuando confirme e inicie sesión)
+   *   → devolvemos data tal cual para que el caller decida qué hacer
+   *
+   * Caso B: Confirmación por email DESACTIVADA
+   *   → data.session existe
+   *   → creamos user_data inmediatamente
+   *   → devolvemos data + userData
+   */
   const signup = async (email, password) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/login?confirmed=true`,
+      },
     });
     if (error) throw error;
-    setUser(data.user);
-    if (data.user) {
+
+    /* Caso B: sesión inmediata (sin confirmación por email) */
+    if (data?.session && data?.user) {
+      setUser(data.user);
       const uData = await createUserData(data.user);
       setUserData(uData);
-      return uData;
+      return { ...data, userData: uData };
     }
-    return null;
+
+    /* Caso A: hay que confirmar email */
+    setUser(null);
+    setUserData(null);
+    return { ...data, userData: null };
   };
 
+  /**
+   * Login. Si el email no está confirmado, Supabase lanza un error
+   * con message "Email not confirmed" que el caller debe manejar.
+   */
   const login = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
     if (error) throw error;
+
     setUser(data.user);
     const uData = await createUserData(data.user);
     setUserData(uData);
@@ -237,6 +297,23 @@ export const AuthProvider = ({ children }) => {
     if (error) throw error;
     setUser(null);
     setUserData(null);
+  };
+
+  /**
+   * Reenviar email de confirmación.
+   * No importa si el usuario no tiene sesión (es el caso típico).
+   */
+  const resendConfirmation = async (email) => {
+    if (!email) throw new Error("Email requerido");
+    const { data, error } = await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/login?confirmed=true`,
+      },
+    });
+    if (error) throw error;
+    return data;
   };
 
   const updatePublicUserStatus = async (userId, isPublic) => {
@@ -268,6 +345,7 @@ export const AuthProvider = ({ children }) => {
         verifyUserData,
         updatePublicUserStatus,
         getPublicUsersIdsList,
+        resendConfirmation,
       }}
     >
       {children}
