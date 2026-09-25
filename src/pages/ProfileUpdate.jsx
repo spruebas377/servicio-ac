@@ -36,6 +36,8 @@ import PersonIcon from "@mui/icons-material/Person";
 import PaymentIcon from "@mui/icons-material/Payment";
 import QuestionAnswerOutlined from "@mui/icons-material/QuestionAnswerOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import MiscellaneousServicesIcon from "@mui/icons-material/MiscellaneousServices";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { useAuth } from "../context/AuthContext";
 import { useGenders } from "../context/GendersContext";
 import { useNavigate, useLocation } from "react-router";
@@ -606,6 +608,28 @@ const ProfileUpdate = () => {
     }
   };
 
+  // Desplegar secciones
+  const handlePaymentMethodDisplay = () => {
+    const filterDisplay = document.getElementById("payment-methods");
+    filterDisplay.style.display === "none"
+      ? (filterDisplay.style.display = "flex")
+      : (filterDisplay.style.display = "none");
+  };
+
+  const handleMeetingPlaceDisplay = () => {
+    const filterDisplay = document.getElementById("meeting-places");
+    filterDisplay.style.display === "none"
+      ? (filterDisplay.style.display = "flex")
+      : (filterDisplay.style.display = "none");
+  };
+
+  const handleServiceDisplay = () => {
+    const filterDisplay = document.getElementById("services");
+    filterDisplay.style.display === "none"
+      ? (filterDisplay.style.display = "flex")
+      : (filterDisplay.style.display = "none");
+  };
+
   return (
     <Container
       maxWidth="lg"
@@ -989,10 +1013,47 @@ const ProfileUpdate = () => {
         <Divider sx={{ my: 3 }} />
 
         {/* Métodos de pago */}
-        <SectionLabel icon={<PaymentIcon />}>
+        {/*         <SectionLabel
+          icon={<PaymentIcon />}
+          onClick={handlePaymentMethodDisplay}
+        >
           Seleccioná los métodos de pago que aceptás
-        </SectionLabel>
-        <Box sx={{ mb: 3.5 }}>
+        </SectionLabel> */}
+        <Stack
+          direction="row"
+          spacing={1}
+          alignItems="center"
+          sx={{ color: "text.disabled", mr: 1, mb: 2 }}
+          onClick={handlePaymentMethodDisplay}
+        >
+          <PaymentIcon sx={{ fontSize: 18 }} />
+          <Typography
+            sx={{
+              fontSize: "0.7rem",
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+              color: "text.disabled",
+            }}
+          >
+            Seleccioná los métodos de pago que aceptás
+          </Typography>
+          <KeyboardArrowDownIcon sx={{ fontSize: 18 }} />
+        </Stack>
+        <Stack
+          direction={{
+            xs: "column",
+            md: "row",
+          }}
+          alignItems={{ xs: "flex-start", md: "center" }}
+          spacing={1}
+          sx={{
+            width: "100%",
+            mb: 3.5,
+            display: "none",
+          }}
+          id="payment-methods"
+        >
           <FormControl component="fieldset" fullWidth>
             <FormGroup row>
               {paymentMethods.map((pm) => {
@@ -1014,13 +1075,44 @@ const ProfileUpdate = () => {
               })}
             </FormGroup>
           </FormControl>
-        </Box>
+        </Stack>
 
         {/* Lugares de encuentro */}
-        <SectionLabel icon={<LocationOnOutlinedIcon />}>
-          Lugares de encuentro
-        </SectionLabel>
-        <Box sx={{ mb: 3.5 }}>
+        <Stack
+          direction="row"
+          spacing={1}
+          alignItems="center"
+          sx={{ color: "text.disabled", mr: 1, mb: 2 }}
+          onClick={handleMeetingPlaceDisplay}
+        >
+          <LocationOnOutlinedIcon sx={{ fontSize: 18 }} />
+          <Typography
+            sx={{
+              fontSize: "0.7rem",
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+              color: "text.disabled",
+            }}
+          >
+            Seleccioná los lugares de encuentro
+          </Typography>
+          <KeyboardArrowDownIcon sx={{ fontSize: 18 }} />
+        </Stack>
+        <Stack
+          direction={{
+            xs: "column",
+            md: "row",
+          }}
+          alignItems={{ xs: "flex-start", md: "center" }}
+          spacing={1}
+          sx={{
+            width: "100%",
+            mb: 3.5,
+            display: "none",
+          }}
+          id="meeting-places"
+        >
           <FormControl component="fieldset" fullWidth>
             <FormGroup row>
               {meetingPlaces.map((pm) => {
@@ -1042,13 +1134,44 @@ const ProfileUpdate = () => {
               })}
             </FormGroup>
           </FormControl>
-        </Box>
+        </Stack>
 
         {/* Servicios */}
-        <SectionLabel icon={<InfoOutlinedIcon />}>
-          Servicios que ofrecés
-        </SectionLabel>
-        <Box sx={{ mb: 3.5 }}>
+        <Stack
+          direction="row"
+          spacing={1}
+          alignItems="center"
+          sx={{ color: "text.disabled", mr: 1, mb: 2 }}
+          onClick={handleServiceDisplay}
+        >
+          <MiscellaneousServicesIcon sx={{ fontSize: 18 }} />
+          <Typography
+            sx={{
+              fontSize: "0.7rem",
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+              color: "text.disabled",
+            }}
+          >
+            Seleccioná los servicios que ofrecés
+          </Typography>
+          <KeyboardArrowDownIcon sx={{ fontSize: 18 }} />
+        </Stack>
+        <Stack
+          direction={{
+            xs: "column",
+            md: "row",
+          }}
+          alignItems={{ xs: "flex-start", md: "center" }}
+          spacing={1}
+          sx={{
+            width: "100%",
+            mb: 3.5,
+            display: "none",
+          }}
+          id="services"
+        >
           <FormControl component="fieldset" fullWidth>
             <FormGroup row>
               {services.map((s) => {
@@ -1070,7 +1193,7 @@ const ProfileUpdate = () => {
               })}
             </FormGroup>
           </FormControl>
-        </Box>
+        </Stack>
 
         {/* Acciones */}
         <Stack
