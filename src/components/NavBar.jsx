@@ -30,6 +30,8 @@ import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Diversity3OutlinedIcon from "@mui/icons-material/Diversity3Outlined";
+import ContactSupportOutlinedIcon from "@mui/icons-material/ContactSupportOutlined";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { NavLink } from "react-router";
 import { useColorMode } from "../context/ColorModeContext";
 import { supabase } from "../supabase/client";
@@ -50,14 +52,14 @@ const pages = [
     isGenderMenu: true,
   },
   {
-    icon: <TaskIcon fontSize="small" />,
-    label: "Tareas pendientes",
-    link: "/pending-tasks",
+    icon: <InfoOutlinedIcon fontSize="small" />,
+    label: "Quiénes somos",
+    link: "/about",
   },
   {
-    icon: <CheckCircleIcon fontSize="small" />,
-    label: "Tareas completadas",
-    link: "/done-tasks",
+    icon: <ContactSupportOutlinedIcon fontSize="small" />,
+    label: "Contacto",
+    link: "/contact",
   },
 ];
 

@@ -19,6 +19,7 @@ import TwitterIcon from "@mui/icons-material/Twitter";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import { NavLink } from "react-router";
 import { nombrePagina, Logo } from "./datos/pagina";
+import { Link as RouterLink } from "react-router";
 
 /* ------------------------------------------------------------------ */
 /*  Estilos                                                            */
@@ -84,9 +85,9 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
 /* ------------------------------------------------------------------ */
 
 const productLinks = [
-  { label: "Nueva tarea", link: "/new-task" },
-  { label: "Tareas pendientes", link: "/pending-tasks" },
-  { label: "Tareas completadas", link: "/done-tasks" },
+  { label: "Géneros", link: "/search" },
+  { label: "Quiénes somos", link: "/about" },
+  { label: "Contacto", link: "/contact" },
 ];
 
 const accountLinks = [
@@ -183,7 +184,7 @@ export default function Footer() {
 
           {/* Columna: Producto */}
           <Box>
-            <SectionTitle>Producto</SectionTitle>
+            <SectionTitle>Página</SectionTitle>
             <Stack spacing={0.75}>
               {productLinks.map((l) => (
                 <FooterLink key={l.label} to={l.link}>

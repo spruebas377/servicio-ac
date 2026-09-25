@@ -8,6 +8,7 @@ import ConfirmEmail from "./pages/ConfirmEmail";
 import Login from "./pages/Login_Google";
 import ProfileUpdate from "./pages/ProfileUpdate";
 import LogOut from "./pages/LogOut";
+import AboutUs from "./pages/AboutUs";
 import NavBarWithMessages from "./components/NavBarWithMessages";
 import Footer from "./components/Footer";
 import { useState, useMemo, useEffect } from "react";
@@ -20,6 +21,7 @@ import UserPublicProfile from "./pages/UserPublicProfile";
 import Conversations from "./pages/Conversations";
 import ChatPage from "./pages/ChatPage";
 import ChatNewPage from "./pages/ChatNewPage";
+import Contact from "./pages/Contact";
 import NavBar from "./components/NavBar";
 import SearchResults from "./pages/SearchResults";
 
@@ -70,6 +72,8 @@ function App() {
                     <Route path="/profile" element={<ProfilePage />} />
                     <Route path="/profile-update" element={<ProfileUpdate />} />
                     <Route path="/conversations" element={<Conversations />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/about" element={<AboutUs />} />
                     <Route
                       path="/chat/:conversationId"
                       element={<ChatPage />}
