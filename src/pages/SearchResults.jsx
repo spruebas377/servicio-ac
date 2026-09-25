@@ -1850,7 +1850,7 @@ export default function SearchResults() {
         <EmptyState
           icon={<SearchOffOutlinedIcon sx={{ fontSize: 40 }} />}
           title="Seleccioná un género para empezar"
-          description="Usá el menú 'Qué buscás?' en la barra superior para filtrar usuarios por género."
+          description="Usá el menú 'Géneros' en la barra superior para filtrar usuarios por género."
         />
       ) : loading ? (
         <Grid container spacing={3} sx={{ alignItems: "stretch" }}>

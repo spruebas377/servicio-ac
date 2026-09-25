@@ -65,7 +65,7 @@ const UserCardWrapper = styled(Card)(({ theme }) => ({
   flexDirection: "column",
   height: "100%",
   width: "100%",
-  minWidth: 0,
+  minWidth: "320px",
   boxSizing: "border-box",
   "&:hover": {
     transform: "translateY(-4px)",
@@ -185,7 +185,7 @@ const UserCardItem = ({ user, onPreviewImage, onCopyUrl }) => {
     <UserCardWrapper
       sx={{
         flex: 1,
-        minWidth: 300,
+        minWidth: 320,
         border: user.featured
           ? `2px solid ${theme.palette.warning.main}`
           : "1px solid " + alpha(theme.palette.divider, 0.5),
