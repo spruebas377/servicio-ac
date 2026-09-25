@@ -22,6 +22,7 @@ import LoginOutlinedIcon from "@mui/icons-material/LoginOutlined";
 import Diversity1Icon from "@mui/icons-material/Diversity1";
 import { Link, useNavigate, useLocation } from "react-router";
 import { useAuth } from "../context/AuthContext";
+import { supabase } from "../supabase/client";
 
 const PremiumPaper = styled(Paper)(({ theme }) => ({
   width: "100%",
@@ -109,7 +110,34 @@ const Login = () => {
   const [info, setInfo] = useState("");
 
   /* Mensaje informativo si venimos de /confirm-email o /register */
+  // Handle Supabase magic link token after email confirmation
   useEffect(() => {
+    const hash = window.location.hash;
+    if (hash) {
+      const params = new URLSearchParams(hash.replace(/^#/, ""));
+      const accessToken = params.get("access_token");
+      const refreshToken = params.get("refresh_token");
+      const expiresAt = params.get("expires_at");
+      if (accessToken && refreshToken) {
+        supabase.auth
+          .setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+            expires_at: Number(expiresAt),
+          })
+          .then(() => {
+            // After establishing session, navigate to home or intended page
+            navigate("/", { replace: true });
+          })
+          .catch((err) => {
+            console.error("Error setting Supabase session from magic link:", err);
+          });
+        // Clean URL hash to avoid reprocessing
+        window.history.replaceState(null, "", window.location.pathname + window.location.search);
+        return;
+      }
+    }
+    // Existing informational messages based on navigation state or query params
     const state = location.state || {};
     const query = new URLSearchParams(location.search);
 
@@ -118,7 +146,7 @@ const Login = () => {
     } else if (state.fromRegister) {
       setInfo("Te enviamos un correo. Confirmalo antes de iniciar sesión.");
     }
-  }, [location.state, location.search]);
+  }, [location.state, location.search, navigate]);
 
   /* Si ya hay sesión, redirigir */
   useEffect(() => {
