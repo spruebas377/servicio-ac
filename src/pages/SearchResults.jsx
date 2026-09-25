@@ -1660,6 +1660,7 @@ export default function SearchResults() {
                   "&:hover": {
                     color: "text.primary",
                     backgroundColor: alpha(theme.palette.text.primary, 0.06),
+                    display: "none",
                   },
                 }}
               >
@@ -1691,6 +1692,7 @@ export default function SearchResults() {
                 py: 0.75,
                 color: "text.primary",
                 border: `1px solid ${theme.palette.divider}`,
+                display: "none",
                 "&:hover": {
                   borderColor: alpha(theme.palette.text.primary, 0.2),
                   backgroundColor: alpha(theme.palette.text.primary, 0.03),
@@ -1726,98 +1728,111 @@ export default function SearchResults() {
             </Typography>
           </Stack>
 
-          {/* Provincia */}
-          <FormControl size="small">
-            <FilterSelect
-              displayEmpty
-              value={selectedProvince}
-              onChange={(e) => {
-                const provinceId = e.target.value;
-                setSelectedProvince(provinceId);
-                setSelectedCity("");
-                fetchCitiesByProvince(provinceId); // ← carga solo las de esta provincia
-              }}
-              disabled={loadingLocations}
-              renderValue={(selected) =>
-                selected ? getProvinceName(selected) : "Todas las provincias"
-              }
-              MenuProps={{
-                PaperProps: {
-                  sx: {
-                    borderRadius: 3,
-                    mt: 0.5,
-                    border: `1px solid ${theme.palette.divider}`,
-                    boxShadow:
-                      theme.palette.mode === "light"
-                        ? "0 20px 35px -8px rgba(0,0,0,0.08)"
-                        : "0 20px 35px -8px rgba(0,0,0,0.5)",
-                  },
-                },
-              }}
-            >
-              <MenuItem value="">
-                <em>Todas las provincias</em>
-              </MenuItem>
-              {provinces.map((p) => (
-                <MenuItem key={p.id} value={p.id}>
-                  {p.nombre}
-                </MenuItem>
-              ))}
-            </FilterSelect>
-          </FormControl>
-
-          {/* Ciudad */}
-          <FormControl size="small">
-            <FilterSelect
-              displayEmpty
-              value={selectedCity}
-              onChange={(e) => setSelectedCity(e.target.value)}
-              disabled={!selectedProvince || loadingCities}
-              renderValue={(selected) =>
-                selected ? getCityName(selected) : "Todas las ciudades"
-              }
-              MenuProps={{
-                PaperProps: {
-                  sx: {
-                    borderRadius: 3,
-                    mt: 0.5,
-                    border: `1px solid ${theme.palette.divider}`,
-                    boxShadow:
-                      theme.palette.mode === "light"
-                        ? "0 20px 35px -8px rgba(0,0,0,0.08)"
-                        : "0 20px 35px -8px rgba(0,0,0,0.5)",
-                  },
-                },
-              }}
-            >
-              <MenuItem value="">
-                <em>Todas las ciudades</em>
-              </MenuItem>
-              {cities.map((c) => (
-                <MenuItem key={c.id} value={String(c.id)}>
-                  {c.nombre}
-                </MenuItem>
-              ))}
-            </FilterSelect>
-          </FormControl>
-
-          {/* Rango de edad */}
-          <AgeFilterButton
-            active={isAgeFilterActive}
-            onClick={(e) => setAgeAnchorEl(e.currentTarget)}
-            startIcon={<CakeOutlinedIcon fontSize="small" />}
+          <Stack
+            direction={{
+              xs: "column",
+              md: "row",
+            }}
+            alignItems={{ xs: "flex-start", md: "center" }}
+            spacing={1}
+            sx={{
+              width: "100%",
+            }}
           >
-            {isAgeFilterActive
-              ? `${ageRange[0]} – ${ageRange[1]} años`
-              : "Todas las edades"}
-          </AgeFilterButton>
+            {/* Provincia */}
+            <FormControl size="small" sx={{ minWidth: "100px" }}>
+              <FilterSelect
+                displayEmpty
+                value={selectedProvince}
+                onChange={(e) => {
+                  const provinceId = e.target.value;
+                  setSelectedProvince(provinceId);
+                  setSelectedCity("");
+                  fetchCitiesByProvince(provinceId); // ← carga solo las de esta provincia
+                }}
+                disabled={loadingLocations}
+                renderValue={(selected) =>
+                  selected ? getProvinceName(selected) : "Todas las provincias"
+                }
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      borderRadius: 3,
+                      mt: 0.5,
+                      border: `1px solid ${theme.palette.divider}`,
+                      boxShadow:
+                        theme.palette.mode === "light"
+                          ? "0 20px 35px -8px rgba(0,0,0,0.08)"
+                          : "0 20px 35px -8px rgba(0,0,0,0.5)",
+                    },
+                  },
+                }}
+              >
+                <MenuItem value="">
+                  <em>Todas las provincias</em>
+                </MenuItem>
+                {provinces.map((p) => (
+                  <MenuItem key={p.id} value={p.id}>
+                    {p.nombre}
+                  </MenuItem>
+                ))}
+              </FilterSelect>
+            </FormControl>
 
-          <ServicesPopover
-            services={services}
-            loading={loadingServices}
-            value={selectedServices}
-            onApply={setSelectedServices}
-          />
+            {/* Ciudad */}
+            <FormControl size="small">
+              <FilterSelect
+                displayEmpty
+                value={selectedCity}
+                onChange={(e) => setSelectedCity(e.target.value)}
+                disabled={!selectedProvince || loadingCities}
+                renderValue={(selected) =>
+                  selected ? getCityName(selected) : "Todas las ciudades"
+                }
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      borderRadius: 3,
+                      mt: 0.5,
+                      border: `1px solid ${theme.palette.divider}`,
+                      boxShadow:
+                        theme.palette.mode === "light"
+                          ? "0 20px 35px -8px rgba(0,0,0,0.08)"
+                          : "0 20px 35px -8px rgba(0,0,0,0.5)",
+                    },
+                  },
+                }}
+              >
+                <MenuItem value="">
+                  <em>Todas las ciudades</em>
+                </MenuItem>
+                {cities.map((c) => (
+                  <MenuItem key={c.id} value={String(c.id)}>
+                    {c.nombre}
+                  </MenuItem>
+                ))}
+              </FilterSelect>
+            </FormControl>
+
+            {/* Rango de edad */}
+            <AgeFilterButton
+              active={isAgeFilterActive}
+              onClick={(e) => setAgeAnchorEl(e.currentTarget)}
+              startIcon={<CakeOutlinedIcon fontSize="small" />}
+            >
+              {isAgeFilterActive
+                ? `${ageRange[0]} – ${ageRange[1]} años`
+                : "Todas las edades"}
+            </AgeFilterButton>
+
+            {/* Servicios */}
+            <ServicesPopover
+              services={services}
+              loading={loadingServices}
+              value={selectedServices}
+              onApply={setSelectedServices}
+            />
+          </Stack>
 
           {/* Limpiar todos los filtros */}
           {hasAnyFilter && (
