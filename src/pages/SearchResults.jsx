@@ -1482,6 +1482,13 @@ export default function SearchResults() {
   const hasAnyFilter =
     hasLocationFilters || isAgeFilterActive || isServicesFilterActive;
 
+  const handleFilterDisplay = () => {
+    const filterDisplay = document.getElementById("filter-display");
+    filterDisplay.style.display === "none"
+      ? (filterDisplay.style.display = "flex")
+      : (filterDisplay.style.display = "none");
+  };
+
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
       {/* Header */}
@@ -1713,6 +1720,7 @@ export default function SearchResults() {
             spacing={1}
             alignItems="center"
             sx={{ color: "text.disabled", mr: 1 }}
+            onClick={handleFilterDisplay}
           >
             <LocationOnOutlinedIcon sx={{ fontSize: 18 }} />
             <Typography
@@ -1724,7 +1732,7 @@ export default function SearchResults() {
                 color: "text.disabled",
               }}
             >
-              Filtros
+              Filtros (click para desplegar / ocultar)
             </Typography>
           </Stack>
 
@@ -1738,6 +1746,7 @@ export default function SearchResults() {
             sx={{
               width: "100%",
             }}
+            id="filter-display"
           >
             {/* Provincia */}
             <FormControl size="small" sx={{ minWidth: "100px" }}>
@@ -1836,26 +1845,30 @@ export default function SearchResults() {
 
           {/* Limpiar todos los filtros */}
           {hasAnyFilter && (
-            <Button
-              size="small"
-              onClick={handleClearAllFilters}
-              startIcon={<FilterAltOffOutlinedIcon fontSize="small" />}
-              sx={{
-                textTransform: "none",
-                fontWeight: 500,
-                fontSize: "0.8rem",
-                borderRadius: 999,
-                px: 1.5,
-                py: 0.5,
-                color: "text.secondary",
-                "&:hover": {
-                  color: "text.primary",
-                  backgroundColor: alpha(theme.palette.text.primary, 0.04),
-                },
-              }}
-            >
-              Limpiar todo
-            </Button>
+            <>
+              <Button
+                size="small"
+                onClick={handleClearAllFilters}
+                startIcon={<FilterAltOffOutlinedIcon fontSize="small" />}
+                sx={{
+                  textTransform: "none",
+                  fontWeight: 500,
+                  fontSize: "0.8rem",
+                  border: `1px solid ${alpha(theme.palette.divider, 0.4)}`,
+                  borderRadius: 999,
+                  px: 1.5,
+                  py: 0.5,
+                  mt: 0.5,
+                  color: "text.secondary",
+                  "&:hover": {
+                    color: "text.primary",
+                    backgroundColor: alpha(theme.palette.text.primary, 0.04),
+                  },
+                }}
+              >
+                Limpiar todo
+              </Button>
+            </>
           )}
         </FiltersBar>
       )}
