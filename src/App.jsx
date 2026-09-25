@@ -84,6 +84,7 @@ function App() {
                       element={<MyPublications />}
                     />
                     <Route path="/search" element={<SearchResults />} />
+                    <Route path="/search/*" element={<SearchResults />} />
                     <Route path="/logout" element={<LogOut />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
