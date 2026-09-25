@@ -138,7 +138,7 @@ const UserCardWrapper = styled(Card, {
   flexDirection: "column",
   height: "100%",
   width: "100%",
-  minWidth: 0,
+  minWidth: "320px",
   boxSizing: "border-box",
   "&:hover": {
     transform: "translateY(-4px)",

@@ -127,8 +127,11 @@ const UserCardWrapper = styled(Card)(({ theme, featured }) => ({
   flexDirection: "column",
   height: "100%",
   width: "100%",
-  minWidth: 0,
+  minWidth: "100%",
   boxSizing: "border-box",
+  [theme.breakpoints.down("sm")]: {
+    minWidth: "auto",
+  },
   "&:hover": {
     transform: "translateY(-4px)",
     boxShadow:
@@ -142,7 +145,8 @@ const ImageThumbnailContainer = styled(Box)(({ theme }) => ({
   position: "relative",
   borderRadius: "0.75rem",
   overflow: "hidden",
-  height: 100,
+  // Use aspect ratio for responsive height
+  aspectRatio: "1 / 1",
   backgroundColor:
     theme.palette.mode === "light" ? alpha("#000", 0.03) : alpha("#fff", 0.04),
   border: `1px solid ${alpha(theme.palette.divider, 0.6)}`,
@@ -152,6 +156,9 @@ const ImageThumbnailContainer = styled(Box)(({ theme }) => ({
     transform: "scale(1.03)",
     boxShadow: theme.shadows[3],
     "& .overlay-actions": { opacity: 1 },
+  },
+  [theme.breakpoints.down("sm")]: {
+    aspectRatio: "4 / 3",
   },
 }));
 
@@ -229,6 +236,10 @@ const FilterSelect = styled(Select)(({ theme }) => ({
       theme.palette.mode === "light"
         ? alpha("#000", 0.02)
         : alpha("#fff", 0.02),
+  },
+  [theme.breakpoints.down("sm")]: {
+    minWidth: "100%",
+    height: 36,
   },
 }));
 
