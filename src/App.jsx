@@ -7,6 +7,7 @@ import Register from "./pages/Register";
 import ConfirmEmail from "./pages/ConfirmEmail";
 import Login from "./pages/Login_Google";
 import ProfileUpdate from "./pages/ProfileUpdate";
+import ChangePassword from "./pages/ChangePassword";
 import LogOut from "./pages/LogOut";
 import AboutUs from "./pages/AboutUs";
 import NavBarWithMessages from "./components/NavBarWithMessages";
@@ -71,6 +72,14 @@ function App() {
                     <Route path="/login" element={<Login />} />
                     <Route path="/profile" element={<ProfilePage />} />
                     <Route path="/profile-update" element={<ProfileUpdate />} />
+                    <Route
+                      path="/change-password"
+                      element={<ChangePassword />}
+                    />
+                    <Route
+                      path="/update-password"
+                      element={<ChangePassword />}
+                    />
                     <Route path="/conversations" element={<Conversations />} />
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/about" element={<AboutUs />} />

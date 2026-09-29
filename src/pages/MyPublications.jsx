@@ -30,6 +30,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import PhotoLibraryOutlinedIcon from "@mui/icons-material/PhotoLibraryOutlined";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import CloseIcon from "@mui/icons-material/Close";
+import ImageSliderModal from "../components/ImageSliderModal";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router";
 import { supabase } from "../supabase/client";
@@ -436,61 +437,18 @@ export default function MyPublications() {
         )}
       </Box>
 
-      {/* Modal / Dialog de Vista Previa a Pantalla Completa */}
-      <Dialog
+      {/* Modal de Vista Previa con controles de deslizamiento */}
+      <ImageSliderModal
         open={Boolean(selectedPreview)}
         onClose={() => setSelectedPreview(null)}
-        maxWidth="md"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: "1.5rem",
-            overflow: "hidden",
-            backgroundColor: theme.palette.background.paper,
-          },
-        }}
-      >
-        {selectedPreview && (
-          <>
-            <DialogTitle
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                py: 1.5,
-                px: 2.5,
-              }}
-            >
-              <Typography
-                variant="subtitle1"
-                fontWeight={600}
-                noWrap
-                sx={{ maxWidth: "80%" }}
-              >
-                {selectedPreview.name}
-              </Typography>
-              <IconButton size="small" onClick={() => setSelectedPreview(null)}>
-                <CloseIcon />
-              </IconButton>
-            </DialogTitle>
-
-            <DialogContent sx={{ p: 0, textAlign: "center", bgcolor: "#000" }}>
-              <Box
-                component="img"
-                src={selectedPreview.url}
-                alt={selectedPreview.name}
-                sx={{
-                  maxWidth: "100%",
-                  maxHeight: "75vh",
-                  objectFit: "contain",
-                  display: "block",
-                  margin: "0 auto",
-                }}
-              />
-            </DialogContent>
-          </>
-        )}
-      </Dialog>
+        images={images}
+        initialIndex={
+          selectedPreview
+            ? Math.max(0, images.findIndex((img) => img.path === selectedPreview.path))
+            : 0
+        }
+        onCopyUrl={handleCopyUrl}
+      />
 
       {/* Notificaciones Snackbar */}
       <Snackbar

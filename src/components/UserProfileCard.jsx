@@ -19,6 +19,7 @@ import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import LockResetOutlinedIcon from "@mui/icons-material/LockResetOutlined";
 import CrueltyFreeIcon from "@mui/icons-material/CrueltyFree";
 import { supabase } from "../supabase/client";
 import { NavLink } from "react-router";
@@ -447,15 +448,25 @@ export default function UserProfileCard() {
             </Box>
           </Stack>
 
-          {/* Botón Editar */}
-          <NavLink to="/profile-update" style={{ textDecoration: "none" }}>
-            <EditButton
-              variant="outlined"
-              startIcon={<EditOutlinedIcon fontSize="small" />}
-            >
-              Editar
-            </EditButton>
-          </NavLink>
+          {/* Botones de acción */}
+          <Stack direction="row" spacing={1} flexWrap="wrap">
+            <NavLink to="/profile-update" style={{ textDecoration: "none" }}>
+              <EditButton
+                variant="outlined"
+                startIcon={<EditOutlinedIcon fontSize="small" />}
+              >
+                Editar
+              </EditButton>
+            </NavLink>
+            <NavLink to="/change-password" style={{ textDecoration: "none" }}>
+              <EditButton
+                variant="outlined"
+                startIcon={<LockResetOutlinedIcon fontSize="small" />}
+              >
+                Contraseña
+              </EditButton>
+            </NavLink>
+          </Stack>
         </Box>
 
         <Divider sx={{ my: 2.5 }} />

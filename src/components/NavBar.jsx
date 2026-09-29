@@ -26,6 +26,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import ServicesIcon from "@mui/icons-material/MiscellaneousServices";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import LockResetOutlinedIcon from "@mui/icons-material/LockResetOutlined";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -73,6 +74,11 @@ const settings = [
     icon: <EditOutlinedIcon fontSize="small" />,
     label: "Actualizar perfil",
     link: "/profile-update",
+  },
+  {
+    icon: <LockResetOutlinedIcon fontSize="small" />,
+    label: "Cambiar contraseña",
+    link: "/change-password",
   },
   {
     icon: <ServicesIcon fontSize="small" />,

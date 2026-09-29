@@ -327,6 +327,17 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
+  const updatePassword = async (newPassword) => {
+    if (!newPassword || newPassword.length < 6) {
+      throw new Error("La contraseña debe tener al menos 6 caracteres.");
+    }
+    const { data, error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+    if (error) throw error;
+    return data;
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -336,6 +347,7 @@ export const AuthProvider = ({ children }) => {
         signup,
         login,
         logout,
+        updatePassword,
         setUser,
         setUserData,
         createUserData,

@@ -1,5 +1,5 @@
-// src/pages/Register.jsx
-import { useEffect, useState } from "react";
+// src/pages/ChangePassword.jsx
+import { useState } from "react";
 import {
   Box,
   Paper,
@@ -14,12 +14,12 @@ import {
   Alert,
 } from "@mui/material";
 import { styled, alpha, useTheme } from "@mui/material/styles";
-import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import LockResetOutlinedIcon from "@mui/icons-material/LockResetOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
-import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
-import Diversity1Icon from "@mui/icons-material/Diversity1";
+import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
+import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import { NavLink, useNavigate } from "react-router";
 import { useAuth } from "../context/AuthContext";
 
@@ -119,66 +119,59 @@ const fieldSx = (theme) => ({
 /*  Componente                                                         */
 /* ------------------------------------------------------------------ */
 
-const Register = () => {
+const ChangePassword = () => {
   const theme = useTheme();
-  const { user, signup, loading } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState("");
+  const { user, loading: authLoading, updatePassword } = useAuth();
   const navigate = useNavigate();
 
-  /* Si ya hay sesión activa (por ejemplo, confirmación desactivada),
-     redirigir directo */
-  useEffect(() => {
-    if (user) {
-      navigate("/profile-update", {
-        state: { firstLogin: true },
-        replace: true,
-      });
-    }
-  }, [user, navigate]);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
 
-    if (password !== confirmPassword) {
-      setError("Las contraseñas no coinciden.");
+    if (!newPassword) {
+      setError("Por favor ingresa una nueva contraseña.");
       return;
     }
 
-    if (password.length < 6) {
+    if (newPassword.length < 6) {
       setError("La contraseña debe tener al menos 6 caracteres.");
       return;
     }
 
+    if (newPassword !== confirmPassword) {
+      setError("Las contraseñas no coinciden.");
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
-      const result = await signup(email, password);
-
-      /* Caso 1: Supabase requiere confirmación por email
-         → no hay sesión todavía, redirigimos a /confirm-email */
-      if (!result?.session) {
-        navigate("/confirm-email", {
-          state: { email },
-          replace: true,
-        });
-        return;
-      }
-
-      /* Caso 2: la confirmación por email está desactivada
-         → ya hay sesión, vamos directo al perfil */
-      navigate("/profile-update", {
-        state: { firstLogin: true },
-        replace: true,
-      });
+      await updatePassword(newPassword);
+      setSuccess("¡Tu contraseña ha sido actualizada con éxito!");
+      setNewPassword("");
+      setConfirmPassword("");
     } catch (err) {
-      console.error(err);
-      setError(err?.message || "No se pudo crear la cuenta.");
+      console.error("Error al actualizar la contraseña:", err);
+      setError(
+        err?.message ||
+          "No se pudo modificar la contraseña. Inténtalo nuevamente.",
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  const passwordsMismatch = Boolean(
+    confirmPassword && newPassword !== confirmPassword,
+  );
 
   return (
     <Box
@@ -201,7 +194,7 @@ const Register = () => {
           }}
         >
           <LogoBadge>
-            <Diversity1Icon sx={{ fontSize: 26 }} />
+            <LockResetOutlinedIcon sx={{ fontSize: 28 }} />
           </LogoBadge>
 
           <Typography
@@ -213,12 +206,27 @@ const Register = () => {
               mb: 0.5,
             }}
           >
-            Crear cuenta
+            Modificar contraseña
           </Typography>
           <Typography variant="body2" sx={{ color: "text.secondary" }}>
-            Regístrate para gestionar tus contenidos
+            Ingresa tu nueva contraseña para actualizar la seguridad de tu
+            cuenta
           </Typography>
         </Box>
+
+        {!authLoading && !user && (
+          <Alert
+            severity="warning"
+            sx={{
+              mb: 3,
+              borderRadius: 2.5,
+              fontSize: "0.85rem",
+            }}
+          >
+            Debes haber iniciado sesión o ingresar desde el enlace de
+            recuperación para cambiar tu contraseña.
+          </Alert>
+        )}
 
         {error && (
           <Alert
@@ -238,6 +246,20 @@ const Register = () => {
           </Alert>
         )}
 
+        {success && (
+          <Alert
+            severity="success"
+            icon={<CheckCircleOutlineOutlinedIcon fontSize="inherit" />}
+            sx={{
+              mb: 2.5,
+              borderRadius: 2.5,
+              fontSize: "0.85rem",
+            }}
+          >
+            {success}
+          </Alert>
+        )}
+
         <Box
           component="form"
           onSubmit={handleSubmit}
@@ -249,32 +271,11 @@ const Register = () => {
         >
           <TextField
             fullWidth
-            type="email"
-            label="Email"
-            placeholder="tu@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            autoComplete="email"
-            sx={fieldSx(theme)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <EmailOutlinedIcon
-                    sx={{ color: "text.disabled", fontSize: 20 }}
-                  />
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          <TextField
-            fullWidth
-            type={showPassword ? "text" : "password"}
-            label="Contraseña"
+            type={showNewPassword ? "text" : "password"}
+            label="Nueva contraseña"
             placeholder="Mínimo 6 caracteres"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
             required
             autoComplete="new-password"
             sx={fieldSx(theme)}
@@ -289,18 +290,20 @@ const Register = () => {
               endAdornment: (
                 <InputAdornment position="end">
                   <IconButton
-                    onClick={() => setShowPassword((v) => !v)}
+                    onClick={() => setShowNewPassword((v) => !v)}
                     edge="end"
                     size="small"
                     aria-label={
-                      showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+                      showNewPassword
+                        ? "Ocultar nueva contraseña"
+                        : "Mostrar nueva contraseña"
                     }
                     sx={{
                       color: "text.disabled",
                       "&:hover": { color: "text.primary" },
                     }}
                   >
-                    {showPassword ? (
+                    {showNewPassword ? (
                       <VisibilityOffOutlinedIcon fontSize="small" />
                     ) : (
                       <VisibilityOutlinedIcon fontSize="small" />
@@ -314,18 +317,14 @@ const Register = () => {
           <TextField
             fullWidth
             type={showConfirmPassword ? "text" : "password"}
-            label="Confirmar contraseña"
-            placeholder="Repite tu contraseña"
+            label="Confirmar nueva contraseña"
+            placeholder="Repite la nueva contraseña"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
             autoComplete="new-password"
-            error={Boolean(confirmPassword && password !== confirmPassword)}
-            helperText={
-              confirmPassword && password !== confirmPassword
-                ? "Las contraseñas no coinciden"
-                : ""
-            }
+            error={passwordsMismatch}
+            helperText={passwordsMismatch ? "Las contraseñas no coinciden" : ""}
             sx={fieldSx(theme)}
             InputProps={{
               startAdornment: (
@@ -365,16 +364,16 @@ const Register = () => {
           <PrimaryButton
             type="submit"
             fullWidth
-            disabled={loading}
+            disabled={isSubmitting || authLoading || (!user && !location.hash)}
             startIcon={
-              loading ? (
+              isSubmitting ? (
                 <CircularProgress size={16} color="inherit" />
               ) : (
-                <PersonAddAltOutlinedIcon fontSize="small" />
+                <LockResetOutlinedIcon fontSize="small" />
               )
             }
           >
-            {loading ? "Creando cuenta…" : "Crear cuenta"}
+            {isSubmitting ? "Actualizando…" : "Actualizar contraseña"}
           </PrimaryButton>
         </Box>
 
@@ -382,34 +381,49 @@ const Register = () => {
 
         <Stack
           direction="row"
-          spacing={0.5}
+          spacing={1}
           justifyContent="center"
           alignItems="center"
         >
-          <Typography variant="body2" sx={{ color: "text.secondary" }}>
-            ¿Ya tienes cuenta?
-          </Typography>
-          <Typography
-            component={NavLink}
-            to="/login"
-            variant="body2"
-            sx={{
-              color: "text.primary",
-              fontWeight: 600,
-              textDecoration: "none",
-              transition: "color 0.2s ease, transform 0.2s ease",
-              "&:hover": {
-                color: alpha(theme.palette.text.primary, 0.75),
-                transform: "translateX(2px)",
-              },
-            }}
-          >
-            Inicia sesión
-          </Typography>
+          {user ? (
+            <Button
+              component={NavLink}
+              to="/profile"
+              variant="text"
+              size="small"
+              startIcon={<ArrowBackOutlinedIcon fontSize="small" />}
+              sx={{
+                textTransform: "none",
+                color: "text.secondary",
+                fontWeight: 500,
+                borderRadius: 999,
+                "&:hover": { color: "text.primary" },
+              }}
+            >
+              Volver a mi perfil
+            </Button>
+          ) : (
+            <Button
+              component={NavLink}
+              to="/login"
+              variant="text"
+              size="small"
+              startIcon={<ArrowBackOutlinedIcon fontSize="small" />}
+              sx={{
+                textTransform: "none",
+                color: "text.secondary",
+                fontWeight: 500,
+                borderRadius: 999,
+                "&:hover": { color: "text.primary" },
+              }}
+            >
+              Ir a iniciar sesión
+            </Button>
+          )}
         </Stack>
       </PremiumPaper>
     </Box>
   );
 };
 
-export default Register;
+export default ChangePassword;

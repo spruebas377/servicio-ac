@@ -45,6 +45,7 @@ import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupported
 import RefreshIcon from "@mui/icons-material/Refresh";
 import PersonSearchOutlinedIcon from "@mui/icons-material/PersonSearchOutlined";
 import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
+import ImageSliderModal from "./ImageSliderModal";
 import { supabase } from "../supabase/client";
 
 const BUCKET_NAME = "imagenes";
@@ -375,7 +376,7 @@ const UserCardItem = ({ user, onPreviewImage, onCopyUrl }) => {
             {images.slice(0, 4).map((img, idx) => (
               <Grid item xs={6} key={img.id || img.path}>
                 <ImageThumbnailContainer
-                  onClick={() => onPreviewImage(img, userName)}
+                  onClick={() => onPreviewImage(img, userName, images)}
                 >
                   <Box
                     component="img"
@@ -417,7 +418,7 @@ const UserCardItem = ({ user, onPreviewImage, onCopyUrl }) => {
                         sx={{ color: "#fff", bgcolor: "rgba(0,0,0,0.5)" }}
                         onClick={(e) => {
                           e.stopPropagation();
-                          onPreviewImage(img, userName);
+                          onPreviewImage(img, userName, images);
                         }}
                       >
                         <VisibilityOutlinedIcon fontSize="small" />
@@ -517,8 +518,12 @@ const UserList = ({ users = [] }) => {
     fetchLocations();
   }, []);
 
-  const handlePreviewImage = (image, ownerName) => {
-    setSelectedPreview({ ...image, ownerName });
+  const handlePreviewImage = (image, ownerName, userImages = []) => {
+    setSelectedPreview({
+      ...image,
+      ownerName,
+      userImages: userImages.length ? userImages : [image],
+    });
   };
 
   const handleCopyUrl = (url) => {
@@ -832,92 +837,29 @@ const UserList = ({ users = [] }) => {
         </Grid>
       )}
 
-      {/* Modal / Dialog de Vista Previa de Imagen */}
-      <Dialog
+      {/* Modal / Dialog de Vista Previa de Imagen con controles de deslizamiento */}
+      <ImageSliderModal
         open={Boolean(selectedPreview)}
         onClose={() => setSelectedPreview(null)}
-        maxWidth="md"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: "1.5rem",
-            overflow: "hidden",
-            backgroundColor: theme.palette.background.paper,
-          },
-        }}
-      >
-        {selectedPreview && (
-          <>
-            <DialogTitle
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                py: 1.5,
-                px: 2.5,
-              }}
-            >
-              <Box sx={{ maxWidth: "80%" }}>
-                <Typography variant="subtitle1" fontWeight={700} noWrap>
-                  {selectedPreview.name}
-                </Typography>
-                {selectedPreview.ownerName && (
-                  <Typography variant="caption" color="text.secondary">
-                    Subido por: <strong>{selectedPreview.ownerName}</strong>
-                  </Typography>
-                )}
-              </Box>
-              <IconButton size="small" onClick={() => setSelectedPreview(null)}>
-                <CloseIcon />
-              </IconButton>
-            </DialogTitle>
-
-            <DialogContent sx={{ p: 0, textAlign: "center", bgcolor: "#000" }}>
-              <Box
-                component="img"
-                src={selectedPreview.url}
-                alt={selectedPreview.name}
-                sx={{
-                  maxWidth: "100%",
-                  maxHeight: "75vh",
-                  objectFit: "contain",
-                  display: "block",
-                  margin: "0 auto",
-                }}
-              />
-            </DialogContent>
-
-            <Box
-              sx={{
-                p: 2,
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                borderTop: `1px solid ${alpha(theme.palette.divider, 0.6)}`,
-              }}
-            >
-              <Button
-                startIcon={<ContentCopyIcon />}
-                size="small"
-                onClick={() => handleCopyUrl(selectedPreview.url)}
-              >
-                Copiar enlace
-              </Button>
-              <Button
-                startIcon={<OpenInNewIcon />}
-                size="small"
-                variant="outlined"
-                component="a"
-                href={selectedPreview.url}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Abrir imagen
-              </Button>
-            </Box>
-          </>
-        )}
-      </Dialog>
+        images={
+          selectedPreview?.userImages ||
+          (selectedPreview ? [selectedPreview] : [])
+        }
+        initialIndex={
+          selectedPreview?.userImages
+            ? Math.max(
+                0,
+                selectedPreview.userImages.findIndex(
+                  (img) =>
+                    (img.id || img.path) ===
+                    (selectedPreview.id || selectedPreview.path),
+                ),
+              )
+            : 0
+        }
+        ownerName={selectedPreview?.ownerName}
+        onCopyUrl={handleCopyUrl}
+      />
 
       {/* Notificaciones Snackbar */}
       <Snackbar
