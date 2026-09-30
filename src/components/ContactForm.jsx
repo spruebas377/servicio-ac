@@ -465,14 +465,16 @@ const ContactForm = () => {
           autoComplete="name"
           disabled={isRateLimited}
           sx={fieldSx(theme)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <PersonOutlineOutlinedIcon
-                  sx={{ color: "text.disabled", fontSize: 20 }}
-                />
-              </InputAdornment>
-            ),
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <PersonOutlineOutlinedIcon
+                    sx={{ color: "text.disabled", fontSize: 20 }}
+                  />
+                </InputAdornment>
+              ),
+            },
           }}
         />
 
@@ -488,14 +490,16 @@ const ContactForm = () => {
           autoComplete="email"
           disabled={isRateLimited}
           sx={fieldSx(theme)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <EmailOutlinedIcon
-                  sx={{ color: "text.disabled", fontSize: 20 }}
-                />
-              </InputAdornment>
-            ),
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <EmailOutlinedIcon
+                    sx={{ color: "text.disabled", fontSize: 20 }}
+                  />
+                </InputAdornment>
+              ),
+            },
           }}
         />
 
@@ -512,15 +516,17 @@ const ContactForm = () => {
             value={form.subject}
             onChange={handleChange("subject")}
             MenuProps={{
-              PaperProps: {
-                sx: {
-                  borderRadius: 3,
-                  mt: 0.5,
-                  border: `1px solid ${theme.palette.divider}`,
-                  boxShadow:
-                    theme.palette.mode === "light"
-                      ? "0 20px 35px -8px rgba(0,0,0,0.08)"
-                      : "0 20px 35px -8px rgba(0,0,0,0.5)",
+              slotProps: {
+                paper: {
+                  sx: {
+                    borderRadius: 3,
+                    mt: 0.5,
+                    border: `1px solid ${theme.palette.divider}`,
+                    boxShadow:
+                      theme.palette.mode === "light"
+                        ? "0 20px 35px -8px rgba(0,0,0,0.08)"
+                        : "0 20px 35px -8px rgba(0,0,0,0.5)",
+                  },
                 },
               },
             }}
@@ -565,17 +571,19 @@ const ContactForm = () => {
           inputProps={{ maxLength: 1000 }}
           disabled={isRateLimited}
           sx={fieldSx(theme)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment
-                position="start"
-                sx={{ alignSelf: "flex-start", mt: 1.5 }}
-              >
-                <ChatBubbleOutlineOutlinedIcon
-                  sx={{ color: "text.disabled", fontSize: 20 }}
-                />
-              </InputAdornment>
-            ),
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment
+                  position="start"
+                  sx={{ alignSelf: "flex-start", mt: 1.5 }}
+                >
+                  <ChatBubbleOutlineOutlinedIcon
+                    sx={{ color: "text.disabled", fontSize: 20 }}
+                  />
+                </InputAdornment>
+              ),
+            },
           }}
         />
 

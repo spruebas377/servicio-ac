@@ -186,16 +186,18 @@ export default function ImageSliderModal({
       onClose={onClose}
       maxWidth="md"
       fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: "1.75rem",
-          overflow: "hidden",
-          backgroundColor: theme.palette.background.paper,
-          backgroundImage: "none",
-          boxShadow:
-            theme.palette.mode === "light"
-              ? "0 25px 50px -12px rgba(0,0,0,0.25)"
-              : "0 25px 50px -12px rgba(0,0,0,0.8)",
+      slotProps={{
+        paper: {
+          sx: {
+            borderRadius: "1.75rem",
+            overflow: "hidden",
+            backgroundColor: theme.palette.background.paper,
+            backgroundImage: "none",
+            boxShadow:
+              theme.palette.mode === "light"
+                ? "0 25px 50px -12px rgba(0,0,0,0.25)"
+                : "0 25px 50px -12px rgba(0,0,0,0.8)",
+          },
         },
       }}
     >

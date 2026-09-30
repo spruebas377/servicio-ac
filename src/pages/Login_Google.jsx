@@ -227,14 +227,16 @@ const Login = () => {
             required
             autoComplete="email"
             sx={fieldSx(theme)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <EmailOutlinedIcon
-                    sx={{ color: "text.disabled", fontSize: 20 }}
-                  />
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <EmailOutlinedIcon
+                      sx={{ color: "text.disabled", fontSize: 20 }}
+                    />
+                  </InputAdornment>
+                ),
+              },
             }}
           />
 
@@ -248,36 +250,38 @@ const Login = () => {
             required
             autoComplete="current-password"
             sx={fieldSx(theme)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <LockOutlinedIcon
-                    sx={{ color: "text.disabled", fontSize: 20 }}
-                  />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setShowPassword((v) => !v)}
-                    edge="end"
-                    size="small"
-                    aria-label={
-                      showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
-                    }
-                    sx={{
-                      color: "text.disabled",
-                      "&:hover": { color: "text.primary" },
-                    }}
-                  >
-                    {showPassword ? (
-                      <VisibilityOffOutlinedIcon fontSize="small" />
-                    ) : (
-                      <VisibilityOutlinedIcon fontSize="small" />
-                    )}
-                  </IconButton>
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LockOutlinedIcon
+                      sx={{ color: "text.disabled", fontSize: 20 }}
+                    />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword((v) => !v)}
+                      edge="end"
+                      size="small"
+                      aria-label={
+                        showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+                      }
+                      sx={{
+                        color: "text.disabled",
+                        "&:hover": { color: "text.primary" },
+                      }}
+                    >
+                      {showPassword ? (
+                        <VisibilityOffOutlinedIcon fontSize="small" />
+                      ) : (
+                        <VisibilityOutlinedIcon fontSize="small" />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
             }}
           />
 

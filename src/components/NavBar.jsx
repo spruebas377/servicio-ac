@@ -292,9 +292,11 @@ export default function NavBar() {
                     </ListItemIcon>
                     <ListItemText
                       primary={page.label}
-                      primaryTypographyProps={{
-                        fontSize: "0.9rem",
-                        fontWeight: 500,
+                      slotProps={{
+                        primary: {
+                          fontSize: "0.9rem",
+                          fontWeight: 500,
+                        },
                       }}
                     />
                   </StyledMenuItem>
@@ -450,9 +452,11 @@ export default function NavBar() {
                     </ListItemIcon>
                     <ListItemText
                       primary={setting.label}
-                      primaryTypographyProps={{
-                        fontSize: "0.88rem",
-                        fontWeight: 500,
+                      slotProps={{
+                        primary: {
+                          fontSize: "0.88rem",
+                          fontWeight: 500,
+                        },
                       }}
                     />
                   </StyledMenuItem>

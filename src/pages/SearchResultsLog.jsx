@@ -580,7 +580,7 @@ const UserResultCard = ({
         {loadingImages ? (
           <Grid container spacing={1}>
             {[1, 2, 3, 4].map((n) => (
-              <Grid item xs={6} key={n}>
+              <Grid size={6} key={n}>
                 <Skeleton
                   variant="rounded"
                   height={100}
@@ -618,7 +618,7 @@ const UserResultCard = ({
         ) : (
           <Grid container spacing={1}>
             {images.slice(0, 4).map((img, idx) => (
-              <Grid item xs={6} key={img.id || img.path}>
+              <Grid size={6} key={img.id || img.path}>
                 <ImageThumbnailContainer
                   onClick={() => onPreviewImage(img, userName)}
                 >
@@ -732,7 +732,7 @@ const UserCardSkeleton = () => (
       </Stack>
       <Grid container spacing={1}>
         {[1, 2, 3, 4].map((n) => (
-          <Grid item xs={6} key={n}>
+          <Grid size={6} key={n}>
             <Skeleton variant="rounded" height={100} />
           </Grid>
         ))}
@@ -1782,7 +1782,7 @@ export default function SearchResults() {
       ) : loading ? (
         <Grid container spacing={3} sx={{ alignItems: "stretch" }}>
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Grid item xs={12} sm={6} md={4} key={i} sx={{ display: "flex" }}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={i} sx={{ display: "flex" }}>
               <UserCardSkeleton />
             </Grid>
           ))}
@@ -1872,10 +1872,7 @@ export default function SearchResults() {
         <Grid container spacing={3} sx={{ alignItems: "stretch" }}>
           {sortedUsers.map((user) => (
             <Grid
-              item
-              xs={12}
-              sm={6}
-              md={4}
+              size={{ xs: 12, sm: 6, md: 4 }}
               key={user.id}
               sx={{ display: "flex", minWidth: 0 }}
             >

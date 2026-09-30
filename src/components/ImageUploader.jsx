@@ -446,7 +446,7 @@ export default function ImageUploader({
 
           <Grid container spacing={1.5}>
             {selectedFiles.map((item) => (
-              <Grid item xs={6} sm={4} md={3} key={item.id}>
+              <Grid size={{ xs: 6, sm: 4, md: 3 }} key={item.id}>
                 <PreviewCard>
                   <ImageThumbnail src={item.previewUrl} alt={item.name} />
                   <OverlayActions className="overlay-actions">

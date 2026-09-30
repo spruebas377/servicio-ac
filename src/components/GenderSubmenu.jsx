@@ -189,14 +189,16 @@ const GenderList = ({ genders, loading, onSelect, dense = false }) => {
           </Box>
         }
         secondary={!dense ? g.description : undefined}
-        primaryTypographyProps={{
-          component: "div",
-          sx: { width: "100%" },
-        }}
-        secondaryTypographyProps={{
-          fontSize: "0.72rem",
-          color: "text.disabled",
-          noWrap: true,
+        slotProps={{
+          primary: {
+            component: "div",
+            sx: { width: "100%" },
+          },
+          secondary: {
+            fontSize: "0.72rem",
+            color: "text.disabled",
+            noWrap: true,
+          },
         }}
       />
     </StyledMenuItem>
@@ -318,7 +320,9 @@ export function GenderSubmenuMobile({ onSelect }) {
 
         <ListItemText
           primary="Géneros"
-          primaryTypographyProps={{ fontSize: "0.9rem", fontWeight: 500 }}
+          slotProps={{
+          primary: { fontSize: "0.9rem", fontWeight: 500 },
+        }}
         />
 
         {!loading && total > 0 && (

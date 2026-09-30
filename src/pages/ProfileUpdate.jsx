@@ -125,15 +125,17 @@ const SectionLabel = ({ icon, children }) => (
 
 /* ---------- Select menu props (DRY) ---------- */
 const selectMenuProps = (theme) => ({
-  PaperProps: {
-    sx: {
-      borderRadius: 3,
-      mt: 0.5,
-      border: `1px solid ${theme.palette.divider}`,
-      boxShadow:
-        theme.palette.mode === "light"
-          ? "0 20px 35px -8px rgba(0,0,0,0.08)"
-          : "0 20px 35px -8px rgba(0,0,0,0.5)",
+  slotProps: {
+    paper: {
+      sx: {
+        borderRadius: 3,
+        mt: 0.5,
+        border: `1px solid ${theme.palette.divider}`,
+        boxShadow:
+          theme.palette.mode === "light"
+            ? "0 20px 35px -8px rgba(0,0,0,0.08)"
+            : "0 20px 35px -8px rgba(0,0,0,0.5)",
+      },
     },
   },
 });
@@ -743,17 +745,19 @@ const ProfileUpdate = () => {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             sx={fieldSx(theme)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment
-                  position="start"
-                  sx={{ alignSelf: "flex-start", mt: 1.5 }}
-                >
-                  <NotesOutlinedIcon
-                    sx={{ color: "text.disabled", fontSize: 20 }}
-                  />
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment
+                    position="start"
+                    sx={{ alignSelf: "flex-start", mt: 1.5 }}
+                  >
+                    <NotesOutlinedIcon
+                      sx={{ color: "text.disabled", fontSize: 20 }}
+                    />
+                  </InputAdornment>
+                ),
+              },
             }}
           />
           <TextField
@@ -762,14 +766,16 @@ const ProfileUpdate = () => {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             sx={fieldSx(theme)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <PhoneOutlinedIcon
-                    sx={{ color: "text.disabled", fontSize: 20 }}
-                  />
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <PhoneOutlinedIcon
+                      sx={{ color: "text.disabled", fontSize: 20 }}
+                    />
+                  </InputAdornment>
+                ),
+              },
             }}
           />
           <TextField
@@ -778,14 +784,16 @@ const ProfileUpdate = () => {
             value={nationality}
             onChange={(e) => setNationality(e.target.value)}
             sx={fieldSx(theme)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <FlagOutlinedIcon
-                    sx={{ color: "text.disabled", fontSize: 20 }}
-                  />
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <FlagOutlinedIcon
+                      sx={{ color: "text.disabled", fontSize: 20 }}
+                    />
+                  </InputAdornment>
+                ),
+              },
             }}
           />
         </Stack>
@@ -922,14 +930,16 @@ const ProfileUpdate = () => {
             value={height}
             onChange={(e) => setHeight(e.target.value)}
             sx={fieldSx(theme)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <HeightOutlinedIcon
-                    sx={{ color: "text.disabled", fontSize: 20 }}
-                  />
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <HeightOutlinedIcon
+                      sx={{ color: "text.disabled", fontSize: 20 }}
+                    />
+                  </InputAdornment>
+                ),
+              },
             }}
           />
           <TextField
@@ -938,14 +948,16 @@ const ProfileUpdate = () => {
             value={hairColor}
             onChange={(e) => setHairColor(e.target.value)}
             sx={fieldSx(theme)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <BrushOutlinedIcon
-                    sx={{ color: "text.disabled", fontSize: 20 }}
-                  />
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <BrushOutlinedIcon
+                      sx={{ color: "text.disabled", fontSize: 20 }}
+                    />
+                  </InputAdornment>
+                ),
+              },
             }}
           />
           <TextField
@@ -954,14 +966,16 @@ const ProfileUpdate = () => {
             value={eyeColor}
             onChange={(e) => setEyeColor(e.target.value)}
             sx={fieldSx(theme)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <BrushOutlinedIcon
-                    sx={{ color: "text.disabled", fontSize: 20 }}
-                  />
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <BrushOutlinedIcon
+                      sx={{ color: "text.disabled", fontSize: 20 }}
+                    />
+                  </InputAdornment>
+                ),
+              },
             }}
           />
           <TextField
@@ -970,12 +984,14 @@ const ProfileUpdate = () => {
             value={age}
             onChange={(e) => setAge(e.target.value)}
             sx={fieldSx(theme)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <PersonIcon sx={{ color: "text.disabled", fontSize: 20 }} />
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <PersonIcon sx={{ color: "text.disabled", fontSize: 20 }} />
+                  </InputAdornment>
+                ),
+              },
             }}
           />
         </Box>
@@ -995,17 +1011,19 @@ const ProfileUpdate = () => {
             value={aboutMe}
             onChange={(e) => setAboutMe(e.target.value)}
             sx={fieldSx(theme)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment
-                  position="start"
-                  sx={{ alignSelf: "flex-start", mt: 1.5 }}
-                >
-                  <QuestionAnswerOutlined
-                    sx={{ color: "text.disabled", fontSize: 20 }}
-                  />
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment
+                    position="start"
+                    sx={{ alignSelf: "flex-start", mt: 1.5 }}
+                  >
+                    <QuestionAnswerOutlined
+                      sx={{ color: "text.disabled", fontSize: 20 }}
+                    />
+                  </InputAdornment>
+                ),
+              },
             }}
           />
         </Box>

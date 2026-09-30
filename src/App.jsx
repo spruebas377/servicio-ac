@@ -25,6 +25,7 @@ import ChatNewPage from "./pages/ChatNewPage";
 import Contact from "./pages/Contact";
 import NavBar from "./components/NavBar";
 import SearchResults from "./pages/SearchResults";
+import AgeVerificationModal from "./components/AgeVerificationModal";
 
 function App() {
   // Persistimos el modo en localStorage
@@ -51,6 +52,7 @@ function App() {
     <ThemeProvider theme={theme}>
       <ColorModeContext.Provider value={colorMode}>
         <CssBaseline />
+        <AgeVerificationModal />
         <GendersProvider>
           <BrowserRouter>
             <AuthProvider>

@@ -351,7 +351,7 @@ export default function AboutUs() {
         <PremiumPaper elevation={0}>
           <Grid container spacing={{ xs: 2, md: 3 }}>
             {STATS.map((stat, idx) => (
-              <Grid item xs={6} md={3} key={stat.label}>
+              <Grid size={{ xs: 6, md: 3 }} key={stat.label}>
                 <StatBlock>
                   <StatNumber>{stat.value}</StatNumber>
                   <Typography
@@ -381,7 +381,7 @@ export default function AboutUs() {
       {/* ---------- HISTORIA ---------- */}
       <Container maxWidth="lg" sx={{ mb: { xs: 6, md: 8 } }}>
         <Grid container spacing={{ xs: 4, md: 5 }} alignItems="center">
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <SectionTitle>Nuestra historia</SectionTitle>
             <Typography
               variant="h4"
@@ -426,7 +426,7 @@ export default function AboutUs() {
             </Stack>
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <PremiumPaper
               elevation={0}
               sx={{
@@ -500,7 +500,7 @@ export default function AboutUs() {
 
         <Grid container spacing={{ xs: 2.5, md: 3 }}>
           {VALUES.map((value) => (
-            <Grid item xs={12} sm={6} md={4} key={value.title}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={value.title}>
               <ValueCard elevation={0}>
                 <ValueIcon>{value.icon}</ValueIcon>
                 <Typography
@@ -551,7 +551,7 @@ export default function AboutUs() {
 
         <Grid container spacing={{ xs: 3, md: 4 }} justifyContent="center">
           {TEAM.map((member) => (
-            <Grid item xs={6} sm={4} md={3} key={member.name}>
+            <Grid size={{ xs: 6, sm: 4, md: 3 }} key={member.name}>
               <Stack alignItems="center" textAlign="center">
                 <TeamAvatar>{member.initials}</TeamAvatar>
                 <Typography

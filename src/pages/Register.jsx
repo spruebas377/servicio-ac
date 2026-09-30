@@ -257,14 +257,16 @@ const Register = () => {
             required
             autoComplete="email"
             sx={fieldSx(theme)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <EmailOutlinedIcon
-                    sx={{ color: "text.disabled", fontSize: 20 }}
-                  />
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <EmailOutlinedIcon
+                      sx={{ color: "text.disabled", fontSize: 20 }}
+                    />
+                  </InputAdornment>
+                ),
+              },
             }}
           />
 
@@ -278,36 +280,38 @@ const Register = () => {
             required
             autoComplete="new-password"
             sx={fieldSx(theme)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <LockOutlinedIcon
-                    sx={{ color: "text.disabled", fontSize: 20 }}
-                  />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setShowPassword((v) => !v)}
-                    edge="end"
-                    size="small"
-                    aria-label={
-                      showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
-                    }
-                    sx={{
-                      color: "text.disabled",
-                      "&:hover": { color: "text.primary" },
-                    }}
-                  >
-                    {showPassword ? (
-                      <VisibilityOffOutlinedIcon fontSize="small" />
-                    ) : (
-                      <VisibilityOutlinedIcon fontSize="small" />
-                    )}
-                  </IconButton>
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LockOutlinedIcon
+                      sx={{ color: "text.disabled", fontSize: 20 }}
+                    />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword((v) => !v)}
+                      edge="end"
+                      size="small"
+                      aria-label={
+                        showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+                      }
+                      sx={{
+                        color: "text.disabled",
+                        "&:hover": { color: "text.primary" },
+                      }}
+                    >
+                      {showPassword ? (
+                        <VisibilityOffOutlinedIcon fontSize="small" />
+                      ) : (
+                        <VisibilityOutlinedIcon fontSize="small" />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
             }}
           />
 
@@ -327,38 +331,40 @@ const Register = () => {
                 : ""
             }
             sx={fieldSx(theme)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <LockOutlinedIcon
-                    sx={{ color: "text.disabled", fontSize: 20 }}
-                  />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setShowConfirmPassword((v) => !v)}
-                    edge="end"
-                    size="small"
-                    aria-label={
-                      showConfirmPassword
-                        ? "Ocultar confirmación de contraseña"
-                        : "Mostrar confirmación de contraseña"
-                    }
-                    sx={{
-                      color: "text.disabled",
-                      "&:hover": { color: "text.primary" },
-                    }}
-                  >
-                    {showConfirmPassword ? (
-                      <VisibilityOffOutlinedIcon fontSize="small" />
-                    ) : (
-                      <VisibilityOutlinedIcon fontSize="small" />
-                    )}
-                  </IconButton>
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LockOutlinedIcon
+                      sx={{ color: "text.disabled", fontSize: 20 }}
+                    />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowConfirmPassword((v) => !v)}
+                      edge="end"
+                      size="small"
+                      aria-label={
+                        showConfirmPassword
+                          ? "Ocultar confirmación de contraseña"
+                          : "Mostrar confirmación de contraseña"
+                      }
+                      sx={{
+                        color: "text.disabled",
+                        "&:hover": { color: "text.primary" },
+                      }}
+                    >
+                      {showConfirmPassword ? (
+                        <VisibilityOffOutlinedIcon fontSize="small" />
+                      ) : (
+                        <VisibilityOutlinedIcon fontSize="small" />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
             }}
           />
 

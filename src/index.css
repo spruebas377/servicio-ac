@@ -6,3 +6,13 @@
 body {
   font-family: Roboto;
 }
+
+/* Ocultar el ícono nativo del navegador (Edge/Chrome) en campos de contraseña
+   para que no se superponga al botón personalizado de MUI */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear,
+input[type="password"]::-webkit-credentials-auto-fill-button {
+  display: none !important;
+  visibility: hidden;
+  pointer-events: none;
+}

@@ -279,38 +279,40 @@ const ChangePassword = () => {
             required
             autoComplete="new-password"
             sx={fieldSx(theme)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <LockOutlinedIcon
-                    sx={{ color: "text.disabled", fontSize: 20 }}
-                  />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setShowNewPassword((v) => !v)}
-                    edge="end"
-                    size="small"
-                    aria-label={
-                      showNewPassword
-                        ? "Ocultar nueva contraseña"
-                        : "Mostrar nueva contraseña"
-                    }
-                    sx={{
-                      color: "text.disabled",
-                      "&:hover": { color: "text.primary" },
-                    }}
-                  >
-                    {showNewPassword ? (
-                      <VisibilityOffOutlinedIcon fontSize="small" />
-                    ) : (
-                      <VisibilityOutlinedIcon fontSize="small" />
-                    )}
-                  </IconButton>
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LockOutlinedIcon
+                      sx={{ color: "text.disabled", fontSize: 20 }}
+                    />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowNewPassword((v) => !v)}
+                      edge="end"
+                      size="small"
+                      aria-label={
+                        showNewPassword
+                          ? "Ocultar nueva contraseña"
+                          : "Mostrar nueva contraseña"
+                      }
+                      sx={{
+                        color: "text.disabled",
+                        "&:hover": { color: "text.primary" },
+                      }}
+                    >
+                      {showNewPassword ? (
+                        <VisibilityOffOutlinedIcon fontSize="small" />
+                      ) : (
+                        <VisibilityOutlinedIcon fontSize="small" />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
             }}
           />
 
@@ -326,38 +328,40 @@ const ChangePassword = () => {
             error={passwordsMismatch}
             helperText={passwordsMismatch ? "Las contraseñas no coinciden" : ""}
             sx={fieldSx(theme)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <LockOutlinedIcon
-                    sx={{ color: "text.disabled", fontSize: 20 }}
-                  />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setShowConfirmPassword((v) => !v)}
-                    edge="end"
-                    size="small"
-                    aria-label={
-                      showConfirmPassword
-                        ? "Ocultar confirmación de contraseña"
-                        : "Mostrar confirmación de contraseña"
-                    }
-                    sx={{
-                      color: "text.disabled",
-                      "&:hover": { color: "text.primary" },
-                    }}
-                  >
-                    {showConfirmPassword ? (
-                      <VisibilityOffOutlinedIcon fontSize="small" />
-                    ) : (
-                      <VisibilityOutlinedIcon fontSize="small" />
-                    )}
-                  </IconButton>
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LockOutlinedIcon
+                      sx={{ color: "text.disabled", fontSize: 20 }}
+                    />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowConfirmPassword((v) => !v)}
+                      edge="end"
+                      size="small"
+                      aria-label={
+                        showConfirmPassword
+                          ? "Ocultar confirmación de contraseña"
+                          : "Mostrar confirmación de contraseña"
+                      }
+                      sx={{
+                        color: "text.disabled",
+                        "&:hover": { color: "text.primary" },
+                      }}
+                    >
+                      {showConfirmPassword ? (
+                        <VisibilityOffOutlinedIcon fontSize="small" />
+                      ) : (
+                        <VisibilityOutlinedIcon fontSize="small" />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
             }}
           />
 

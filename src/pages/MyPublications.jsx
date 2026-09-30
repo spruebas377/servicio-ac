@@ -339,7 +339,7 @@ export default function MyPublications() {
         ) : (
           <Grid container spacing={2.5}>
             {images.map((img) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={img.path}>
+              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={img.path}>
                 <Fade in timeout={300}>
                   <GalleryCard>
                     <Box
