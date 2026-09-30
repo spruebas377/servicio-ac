@@ -26,6 +26,9 @@ import Contact from "./pages/Contact";
 import NavBar from "./components/NavBar";
 import SearchResults from "./pages/SearchResults";
 import AgeVerificationModal from "./components/AgeVerificationModal";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import Cookies from "./pages/Cookies";
 
 function App() {
   // Persistimos el modo en localStorage
@@ -101,6 +104,9 @@ function App() {
                     <Route path="/search" element={<SearchResults />} />
                     <Route path="/search/*" element={<SearchResults />} />
                     <Route path="/logout" element={<LogOut />} />
+                    <Route path="/terms" element={<Terms />} />
+                    <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/cookies" element={<Cookies />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Box>

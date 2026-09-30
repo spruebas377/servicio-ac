@@ -299,7 +299,7 @@ export default function AboutUs() {
 
           <Chip
             icon={<FavoriteIcon sx={{ fontSize: "1rem !important" }} />}
-            label="Hecho con cuidado en Madrid"
+            label="Hecho con cuidado en Argentina"
             size="small"
             sx={{
               mb: 2.5,
@@ -419,9 +419,8 @@ export default function AboutUs() {
                 }}
               >
                 Empezamos como un proyecto interno entre cuatro personas. Hoy
-                somos miles de usuarios en toda España y Latinoamérica. Lo
-                mejor: seguimos tomando cada decisión con el mismo cuidado del
-                primer día.
+                somos miles de usuarios en toda Argentina. Lo mejor: seguimos
+                tomando cada decisión con el mismo cuidado del primer día.
               </Typography>
             </Stack>
           </Grid>

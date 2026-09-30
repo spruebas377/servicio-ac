@@ -6,6 +6,7 @@ import { Box } from "@mui/material";
 import { NavLink } from "react-router";
 
 export const nombrePagina = "ArgComp";
+export const email = "contacto@argcomp.com";
 
 export const Logo = () => {
   const theme = useTheme();
