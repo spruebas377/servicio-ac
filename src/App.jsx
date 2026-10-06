@@ -18,6 +18,7 @@ import { ColorModeContext } from "./context/ColorModeContext";
 import { getTheme } from "./theme";
 import ProfilePage from "./pages/ProfilePage";
 import MyPublications from "./pages/MyPublications";
+import MyComments from "./pages/MyComments";
 import UserPublicProfile from "./pages/UserPublicProfile";
 import Conversations from "./pages/Conversations";
 import ChatPage from "./pages/ChatPage";
@@ -100,6 +101,10 @@ function App() {
                     <Route
                       path="/my-publications"
                       element={<MyPublications />}
+                    />
+                    <Route
+                      path="/my-comments"
+                      element={<MyComments />}
                     />
                     <Route path="/search" element={<SearchResults />} />
                     <Route path="/search/*" element={<SearchResults />} />

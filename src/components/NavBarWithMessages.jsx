@@ -27,6 +27,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import ServicesIcon from "@mui/icons-material/MiscellaneousServices";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
 import { NavLink } from "react-router";
@@ -69,6 +70,11 @@ const settings = [
     icon: <ServicesIcon fontSize="small" />,
     label: "Mis publicaciones",
     link: "/my-publications",
+  },
+  {
+    icon: <ChatBubbleOutlineOutlinedIcon fontSize="small" />,
+    label: "Mis comentarios",
+    link: "/my-comments",
   },
   { divider: true },
   {

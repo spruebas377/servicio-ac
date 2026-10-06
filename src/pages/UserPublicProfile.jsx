@@ -47,6 +47,7 @@ import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import RoomServiceIcon from "@mui/icons-material/RoomService";
 import { QuestionAnswerOutlined } from "@mui/icons-material";
 import ImageSliderModal from "../components/ImageSliderModal";
+import ProfileComments from "../components/ProfileComments";
 import { supabase } from "../supabase/client";
 
 const BUCKET_NAME = "imagenes";
@@ -918,6 +919,9 @@ export default function UserPublicProfile() {
           </Grid>
         )}
       </Box>
+
+      {/* ============ Sección de Comentarios Públicos ============ */}
+      <ProfileComments profileId={userId} profileOwnerName={userName} />
 
       {/* ============ Modal Vista Previa con controles de deslizamiento ============ */}
       <ImageSliderModal
