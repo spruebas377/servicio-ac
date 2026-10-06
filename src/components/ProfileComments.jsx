@@ -60,9 +60,7 @@ const CommentCard = styled(Card)(({ theme }) => ({
     theme.palette.mode === "light" ? alpha("#000", 0.05) : alpha("#fff", 0.06)
   }`,
   backgroundColor:
-    theme.palette.mode === "light"
-      ? alpha("#000", 0.015)
-      : alpha("#fff", 0.02),
+    theme.palette.mode === "light" ? alpha("#000", 0.015) : alpha("#fff", 0.02),
   transition: "all 0.2s ease-in-out",
   "&:hover": {
     borderColor:
@@ -107,7 +105,10 @@ function formatRelativeTime(dateString) {
   }
 }
 
-export default function ProfileComments({ profileId, profileOwnerName = "este usuario" }) {
+export default function ProfileComments({
+  profileId,
+  profileOwnerName = "este usuario",
+}) {
   const theme = useTheme();
   const navigate = useNavigate();
   const { user, userData: currentUserData } = useAuth();
@@ -200,7 +201,7 @@ export default function ProfileComments({ profileId, profileOwnerName = "este us
         },
         () => {
           fetchComments();
-        }
+        },
       )
       .subscribe();
 
@@ -502,7 +503,7 @@ export default function ProfileComments({ profileId, profileOwnerName = "este us
                 />
 
                 <Stack
-                  direction="row"
+                  direction={{ xs: "column", sm: "row" }}
                   justifyContent="space-between"
                   alignItems="center"
                   sx={{ mt: 1.5 }}
@@ -534,6 +535,8 @@ export default function ProfileComments({ profileId, profileOwnerName = "este us
                       textTransform: "none",
                       fontWeight: 600,
                       px: 3,
+                      ml: "auto",
+                      mt: { xs: 2, sm: 0 },
                     }}
                   >
                     {submitting ? "Publicando..." : "Publicar comentario"}
@@ -590,12 +593,13 @@ export default function ProfileComments({ profileId, profileOwnerName = "este us
               const isCommentAuthor = user && comment.author_id === user.id;
               const canDelete = isCommentAuthor || isOwnProfile;
               const authorName = comment.author?.name || "Usuario";
-              const authorInitials = authorName
-                .split(" ")
-                .map((w) => w[0])
-                .slice(0, 2)
-                .join("")
-                .toUpperCase() || "U";
+              const authorInitials =
+                authorName
+                  .split(" ")
+                  .map((w) => w[0])
+                  .slice(0, 2)
+                  .join("")
+                  .toUpperCase() || "U";
 
               return (
                 <Fade in key={comment.id} timeout={250}>
@@ -608,7 +612,11 @@ export default function ProfileComments({ profileId, profileOwnerName = "este us
                         spacing={1.5}
                       >
                         {/* Autor y fecha */}
-                        <Stack direction="row" spacing={1.5} alignItems="center">
+                        <Stack
+                          direction="row"
+                          spacing={1.5}
+                          alignItems="center"
+                        >
                           <Avatar
                             component={Link}
                             to={`/user/${comment.author_id}`}
