@@ -49,6 +49,7 @@ import { QuestionAnswerOutlined } from "@mui/icons-material";
 import ImageSliderModal from "../components/ImageSliderModal";
 import ProfileComments from "../components/ProfileComments";
 import { supabase } from "../supabase/client";
+import { useAuth } from "../context/AuthContext";
 
 const BUCKET_NAME = "imagenes";
 
@@ -103,6 +104,7 @@ export default function UserPublicProfile() {
   const theme = useTheme();
   const { userId } = useParams();
   const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
 
   const [userData, setUserData] = useState(null);
   const [paymentMethods, setPaymentMethods] = useState([]);
@@ -718,21 +720,25 @@ export default function UserPublicProfile() {
               />
             </Stack>
 
-            {/* Botón enviar mensaje */}
-            <Tooltip title="Enviar mensaje">
-              <Button
-                variant="outlined"
-                onClick={() => navigate(`/chat/new/${userId}`)}
-                sx={{
-                  mt: 3,
-                  borderRadius: "0.75rem",
-                  textTransform: "none",
-                  alignSelf: "center",
-                }}
-              >
-                Enviar mensaje
-              </Button>
-            </Tooltip>
+            {/* Botón enviar mensaje (oculto en el propio perfil) */}
+            {(!currentUser ||
+              (currentUser.id !== userData?.id &&
+                currentUser.id !== userData?.auth_id)) && (
+              <Tooltip title="Enviar mensaje">
+                <Button
+                  variant="outlined"
+                  onClick={() => navigate(`/chat/new/${userId}`)}
+                  sx={{
+                    mt: 3,
+                    borderRadius: "0.75rem",
+                    textTransform: "none",
+                    alignSelf: "center",
+                  }}
+                >
+                  Enviar mensaje
+                </Button>
+              </Tooltip>
+            )}
           </Stack>
         </Stack>
       </ProfileHeader>

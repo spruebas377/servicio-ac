@@ -1,15 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
 import {
+  Avatar,
   Badge,
   Box,
   Divider,
   IconButton,
   List,
+  ListItemAvatar,
   ListItemButton,
   ListItemText,
   Menu,
   Typography,
   Tooltip,
+  alpha,
+  useTheme,
 } from "@mui/material";
 import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
 import { useNavigate } from "react-router";
@@ -19,12 +23,14 @@ import { useAuth } from "../context/AuthContext";
 export default function MessagesMenu() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const theme = useTheme();
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [conversations, setConversations] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
   const loadMessages = useCallback(async () => {
+    await Promise.resolve();
     if (!user?.id) {
       setConversations([]);
       setUnreadCount(0);
@@ -68,21 +74,35 @@ export default function MessagesMenu() {
       ...new Set((participants ?? []).map((row) => row.user_id)),
     ];
 
-    const { data: profiles, error: profilesError } = otherIds.length
-      ? await supabase
-          .from("user_data")
-          .select("auth_id, name, avatar_url")
-          .in("auth_id", otherIds)
-      : { data: [], error: null };
+    let profiles = [];
+    if (otherIds.length) {
+      const { data: profilesByAuth } = await supabase
+        .from("user_data")
+        .select("id, auth_id, name, avatar_url")
+        .in("auth_id", otherIds);
 
-    if (profilesError) {
-      console.error("Error al cargar perfiles:", profilesError);
-      return;
+      const { data: profilesById } = await supabase
+        .from("user_data")
+        .select("id, auth_id, name, avatar_url")
+        .in("id", otherIds);
+
+      const map = new Map();
+      (profilesByAuth ?? []).forEach((p) => {
+        if (p.auth_id) map.set(p.auth_id, p);
+        if (p.id) map.set(p.id, p);
+      });
+      (profilesById ?? []).forEach((p) => {
+        if (p.auth_id) map.set(p.auth_id, p);
+        if (p.id) map.set(p.id, p);
+      });
+      profiles = Array.from(map.values());
     }
 
-    const profileMap = new Map(
-      (profiles ?? []).map((profile) => [profile.auth_id, profile]),
-    );
+    const profileMap = new Map();
+    profiles.forEach((p) => {
+      if (p.auth_id) profileMap.set(p.auth_id, p);
+      if (p.id) profileMap.set(p.id, p);
+    });
 
     const { data: messages, error: messagesError } = await supabase
       .from("messages")
@@ -96,45 +116,49 @@ export default function MessagesMenu() {
       return;
     }
 
-    const latestByConversation = new Map();
     let totalUnread = 0;
+    const dedupedByOtherUser = new Map();
 
     for (const message of messages ?? []) {
-      if (!latestByConversation.has(message.conversation_id)) {
-        latestByConversation.set(message.conversation_id, message);
-      }
-
       const lastReadAt = readMap.get(message.conversation_id);
       const isUnread =
         message.sender_id !== user.id &&
         (!lastReadAt || new Date(message.created_at) > new Date(lastReadAt));
 
       if (isUnread) totalUnread += 1;
-    }
 
-    const formatted = Array.from(latestByConversation.values()).map(
-      (message) => {
-        const participant = (participants ?? []).find(
-          (row) => row.conversation_id === message.conversation_id,
-        );
-        const profile = participant
-          ? profileMap.get(participant.user_id)
-          : undefined;
+      const participant = (participants ?? []).find(
+        (row) => row.conversation_id === message.conversation_id,
+      );
 
-        return {
+      const otherUserId = participant?.user_id;
+
+      if (otherUserId && !dedupedByOtherUser.has(otherUserId)) {
+        const profile = profileMap.get(otherUserId);
+        dedupedByOtherUser.set(otherUserId, {
           ...message,
+          isUnread,
           name: profile?.name || "Usuario",
           avatar_url: profile?.avatar_url || "",
-        };
-      },
-    );
+        });
+      }
+    }
+
+    const formatted = Array.from(dedupedByOtherUser.values());
 
     setConversations(formatted);
     setUnreadCount(totalUnread);
-  }, [user?.id]);
+  }, [user]);
 
   useEffect(() => {
-    loadMessages();
+    let active = true;
+
+    const run = async () => {
+      if (active) {
+        await loadMessages();
+      }
+    };
+    run();
 
     if (!user?.id) return undefined;
 
@@ -143,6 +167,16 @@ export default function MessagesMenu() {
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
+        loadMessages,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "conversation_participants",
+          filter: `user_id=eq.${user.id}`,
+        },
         loadMessages,
       )
       .on(
@@ -161,10 +195,11 @@ export default function MessagesMenu() {
     window.addEventListener("focus", onFocus);
 
     return () => {
+      active = false;
       window.removeEventListener("focus", onFocus);
       supabase.removeChannel(channel);
     };
-  }, [user?.id, loadMessages]);
+  }, [user, loadMessages]);
 
   const handleClose = () => setAnchorEl(null);
 
@@ -191,8 +226,22 @@ export default function MessagesMenu() {
         onClose={handleClose}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
+        slotProps={{
+          paper: {
+            sx: {
+              width: 320,
+              maxWidth: "100vw",
+              borderRadius: 3,
+              mt: 1,
+              boxShadow:
+                theme.palette.mode === "light"
+                  ? "0 8px 28px -4px rgba(0,0,0,0.12)"
+                  : "0 8px 28px -4px rgba(0,0,0,0.5)",
+            },
+          },
+        }}
       >
-        <Box sx={{ px: 2, py: 1.5, minWidth: 280 }}>
+        <Box sx={{ px: 2, py: 1.5 }}>
           <Typography fontWeight={700}>Mensajes</Typography>
           <Typography variant="caption" color="text.secondary">
             Tus conversaciones recientes
@@ -216,10 +265,58 @@ export default function MessagesMenu() {
                   handleClose();
                   navigate(`/chat/${conversation.conversation_id}`);
                 }}
+                sx={{
+                  px: 2,
+                  py: 1.25,
+                  bgcolor: conversation.isUnread
+                    ? alpha(theme.palette.primary.main, 0.05)
+                    : "transparent",
+                }}
               >
+                <ListItemAvatar sx={{ minWidth: 46 }}>
+                  <Badge
+                    color="error"
+                    variant="dot"
+                    invisible={!conversation.isUnread}
+                    overlap="circular"
+                    anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                  >
+                    <Avatar
+                      src={conversation.avatar_url || undefined}
+                      sx={{
+                        width: 36,
+                        height: 36,
+                        bgcolor: "primary.main",
+                        fontSize: "0.85rem",
+                      }}
+                    >
+                      {conversation.name.charAt(0).toUpperCase()}
+                    </Avatar>
+                  </Badge>
+                </ListItemAvatar>
+
                 <ListItemText
-                  primary={conversation.name}
-                  secondary={conversation.content}
+                  primary={
+                    <Typography
+                      variant="subtitle2"
+                      fontWeight={conversation.isUnread ? 700 : 500}
+                      noWrap
+                    >
+                      {conversation.name}
+                    </Typography>
+                  }
+                  secondary={
+                    <Typography
+                      variant="body2"
+                      color={
+                        conversation.isUnread ? "text.primary" : "text.secondary"
+                      }
+                      fontWeight={conversation.isUnread ? 600 : 400}
+                      noWrap
+                    >
+                      {conversation.content}
+                    </Typography>
+                  }
                 />
               </ListItemButton>
             ))}
@@ -232,8 +329,17 @@ export default function MessagesMenu() {
             handleClose();
             navigate("/conversations");
           }}
+          sx={{ py: 1.5, textAlign: "center" }}
         >
-          <ListItemText primary="Ver todos los mensajes" />
+          <ListItemText
+            primary="Ver todos los mensajes"
+            primaryTypographyProps={{
+              color: "primary.main",
+              fontWeight: 600,
+              fontSize: "0.9rem",
+              align: "center",
+            }}
+          />
         </ListItemButton>
       </Menu>
     </>
