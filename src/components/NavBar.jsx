@@ -41,6 +41,7 @@ import { useAuth } from "../context/AuthContext";
 import MessagesMenu from "./MessagesMenu";
 import { GenderSubmenuDesktop, GenderSubmenuMobile } from "./GenderSubmenu";
 import { nombrePagina, Logo } from "./datos/pagina";
+import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 
 /* ------------------------------------------------------------------ */
 /*  Configuración                                                      */
@@ -90,6 +91,13 @@ const settings = [
     icon: <ChatBubbleOutlineOutlinedIcon fontSize="small" />,
     label: "Mis comentarios",
     link: "/my-comments",
+  },
+  { divider: true },
+  {
+    icon: <AdminPanelSettingsOutlinedIcon fontSize="small" />,
+    label: "Panel de Admin",
+    link: "/admin",
+    adminOnly: true,
   },
   { divider: true },
   {
@@ -191,7 +199,7 @@ const menuPaperSx = (theme) => ({
 /* ------------------------------------------------------------------ */
 
 export default function NavBar() {
-  const { user } = useAuth();
+  const { user, userData } = useAuth();
   const theme = useTheme();
   const { mode, toggleColorMode } = useColorMode();
 
@@ -443,7 +451,7 @@ export default function NavBar() {
               {(user ? settings : settingsNoLogged).map((setting, idx) =>
                 setting.divider ? (
                   <Divider key={`div-${idx}`} sx={{ my: 0.5 }} />
-                ) : (
+                ) : setting.adminOnly && !userData?.is_admin ? null : (
                   <StyledMenuItem
                     key={setting.label}
                     component={NavLink}
